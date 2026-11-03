@@ -1,0 +1,131 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useRef, useState } from "react";
+import { FileUp, Loader2, ScanSearch, Sparkles } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { analyze, type Report } from "@/lib/verify/engine";
+import { ReportView } from "@/components/verify/ReportView";
+
+export const Route = createFileRoute("/verify")({
+  head: () => ({
+    meta: [
+      { title: "Verify an Offer — OfferProof" },
+      { name: "description", content: "Paste an offer or upload a PDF or screenshot to see warning signs with evidence and next steps." },
+      { property: "og:title", content: "Verify an Offer — OfferProof" },
+      { property: "og:description", content: "Check a job or internship offer for warning signs in under a minute." },
+    ],
+  }),
+  component: VerifyPage,
+});
+
+const SAMPLE = `Dear Candidate,
+
+Congratulations! You have been selected for the position of Data Entry Executive (Work From Home) at GlobalTech Solutions Pvt Ltd.
+Salary: ₹45,000 per month. No experience required.
+
+To confirm your joining, kindly pay a refundable registration fee of Rs 2,999 within 24 hours, failing which the offer will be withdrawn.
+Please also share your Aadhaar card and bank account details for salary processing.
+
+Complete your onboarding form here: https://bit.ly/gt-onboard
+
+Regards,
+Rahul Verma
+HR Manager
+hr.globaltech.jobs@gmail.com`;
+
+function VerifyPage() {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState<{ p: number; label: string } | null>(null);
+  const [report, setReport] = useState<Report | null>(null);
+  const [isSample, setIsSample] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function onFile(file: File | undefined) {
+    if (!file) return;
+    setBusy({ p: 0, label: "Preparing" });
+    try {
+      const { extractFromFile } = await import("@/lib/verify/extract-file");
+      const t = await extractFromFile(file, (p, label) => setBusy({ p, label }));
+      if (!t) throw new Error("No text could be read from this file.");
+      setText(t);
+      setIsSample(false);
+      toast.success("Text extracted. Review it below, then run the check.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not read this file.");
+    } finally {
+      setBusy(null);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  function run() {
+    if (text.trim().length < 30) {
+      toast.error("Please provide at least a few sentences of the offer.");
+      return;
+    }
+    setReport(analyze(text));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  if (report)
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+        {isSample && <p className="mb-4 inline-block rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">Sample report · fictional offer</p>}
+        <ReportView report={report} text={text} onReset={() => { setReport(null); }} />
+      </div>
+    );
+
+  return (
+    <div className="bg-grid min-h-[80vh]">
+      <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
+        <p className="eyebrow">Verify an offer</p>
+        <h1 className="mt-3 text-4xl font-bold">What did they send you?</h1>
+        <p className="mt-3 text-muted-foreground">Text is read and checked in your browser. Nothing is uploaded.</p>
+
+        <div className="mt-8 rounded-2xl border bg-card p-6 shadow-card">
+          <Tabs defaultValue="paste">
+            <TabsList>
+              <TabsTrigger value="paste">Paste text</TabsTrigger>
+              <TabsTrigger value="file">Upload PDF / image</TabsTrigger>
+            </TabsList>
+            <TabsContent value="file" className="mt-5">
+              <label
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => { e.preventDefault(); onFile(e.dataTransfer.files[0]); }}
+                className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 text-center transition-colors hover:border-primary"
+              >
+                <FileUp className="size-8 text-primary" />
+                <span className="font-medium">Drop a file or click to browse</span>
+                <span className="text-xs text-muted-foreground">PDF, JPG or PNG · up to 10 MB</span>
+                <input ref={fileRef} type="file" accept="application/pdf,image/png,image/jpeg" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} disabled={!!busy} />
+              </label>
+              {busy && (
+                <div className="mt-4">
+                  <p className="flex items-center gap-2 text-sm"><Loader2 className="size-4 animate-spin" /> {busy.label}…</p>
+                  <Progress value={busy.p * 100} className="mt-2" />
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="paste" className="mt-5" />
+          </Tabs>
+
+          <div className="mt-5">
+            <div className="mb-2 flex items-center justify-between">
+              <label htmlFor="offer" className="text-sm font-medium">Offer text {text && <span className="text-muted-foreground">(review and edit before checking)</span>}</label>
+              <button type="button" className="text-xs text-primary hover:underline" onClick={() => { setText(SAMPLE); setIsSample(true); }}>
+                <Sparkles className="mr-1 inline size-3" />Try a fictional sample
+              </button>
+            </div>
+            <Textarea id="offer" value={text} onChange={(e) => { setText(e.target.value); setIsSample(false); }} rows={12} placeholder="Paste the email, message or offer letter here…" maxLength={50000} />
+          </div>
+          <Button size="lg" className="mt-5 w-full" onClick={run} disabled={!!busy}>
+            <ScanSearch className="size-4" /> Check this offer
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
