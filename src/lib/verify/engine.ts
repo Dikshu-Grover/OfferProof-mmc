@@ -56,7 +56,7 @@ export function extract(text: string): Extracted {
   const emails = findAll(text, /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi).map((e) => e.toLowerCase());
   const urls = findAll(text, /\b(?:https?:\/\/|www\.)[^\s<>"')]+/gi).map((u) => u.replace(/[.,;]+$/, ""));
   const domains = new Set<string>();
-  emails.forEach((e) => domains.add(e.split("@")[1]));
+  emails.forEach((e) => domains.add((e.split("@")[1] ?? "")));
   urls.forEach((u) => {
     const h = hostOf(u);
     if (h) domains.add(h);
@@ -186,7 +186,7 @@ export function analyze(text: string): Report {
       action: "Compare the salary with published ranges for the same role and city on trusted job sites.",
     });
 
-  const freeMail = x.emails.filter((e) => FREE_MAIL.includes(e.split("@")[1]));
+  const freeMail = x.emails.filter((e) => FREE_MAIL.includes((e.split("@")[1] ?? "")));
   if (freeMail.length)
     findings.push({
       id: "personal_email",
