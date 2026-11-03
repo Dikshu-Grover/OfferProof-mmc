@@ -66,7 +66,7 @@ export function extract(text: string): Extracted {
       firstGroup(text, /(?:company|organi[sz]ation|employer)\s*(?:name)?\s*[:\-]\s*([^\n]{2,60})/i) ??
       firstGroup(text, /\b(?:at|join|with)\s+([A-Z][\w&.]*(?:\s+[A-Z][\w&.]*){0,3}\s+(?:Pvt\.?\s*Ltd\.?|Ltd\.?|Inc\.?|LLC|Technologies|Solutions|Corp(?:oration)?|Limited))/),
     recruiter:
-      firstGroup(text, /(?:regards|sincerely|recruiter|hr manager|hiring manager|from)\s*[,:\-]?\s*\n?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/),
+      firstGroup(text, /(?:[Rr]egards|[Ss]incerely|[Rr]ecruiter|HR [Mm]anager|[Hh]iring [Mm]anager)\s*[,:\-]?\s*\n?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/),
     jobTitle: firstGroup(text, /(?:position|role|designation|job title)\s*(?:of)?\s*[:\-]?\s*([^\n,.]{2,60})/i),
     salary:
       firstGroup(text, /(?:salary|stipend|ctc|compensation|package|pay)\s*(?:of|is)?\s*[:\-]?\s*([^\n]{2,60})/i) ??
@@ -90,7 +90,7 @@ export function hostOf(u: string): string | null {
 
 function rootDomain(host: string): string {
   const parts = host.split(".");
-  if (parts.length > 2 && ["co", "com", "org", "net", "ac", "gov"].includes(parts[parts.length - 2])) return parts.slice(-3).join(".");
+  if (parts.length > 2 && ["co", "com", "org", "net", "ac", "gov"].includes(parts[parts.length - 2] ?? "")) return parts.slice(-3).join(".");
   return parts.slice(-2).join(".");
 }
 
