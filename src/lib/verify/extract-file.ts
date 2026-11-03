@@ -21,7 +21,7 @@ export async function extractFromFile(file: File, onProgress?: (p: number, label
       let lastY: number | null = null;
       const out: string[] = [];
       for (const item of content.items as Array<{ str: string; transform: number[] }>) {
-        const y = item.transform[5];
+        const y = item.transform[5] ?? 0;
         if (lastY !== null && Math.abs(y - lastY) > 2) {
           out.push(line);
           line = "";

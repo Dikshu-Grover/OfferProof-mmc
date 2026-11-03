@@ -211,7 +211,7 @@ export function analyze(text: string): Report {
         action: "Search for the company's official website independently and compare its domain with the one in this offer.",
       });
   }
-  if (corpDomains.length > 1 && x.emails.length && new Set(x.emails.map((e) => rootDomain(e.split("@")[1]))).size > 1)
+  if (corpDomains.length > 1 && x.emails.length && new Set(x.emails.map((e) => rootDomain(e.split("@")[1] ?? ""))).size > 1)
     findings.push({
       id: "multiple_domains",
       name: "Multiple sender domains",
