@@ -1,8 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { UserRound } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Loader2, UserRound } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+import { getPending, safeRedirect } from "@/lib/offers";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (s: Record<string, unknown>) => ({ redirect: typeof s.redirect === "string" ? s.redirect : undefined }),
   head: () => ({
     meta: [
       { title: "Login — OfferProof" },
@@ -15,15 +22,76 @@ export const Route = createFileRoute("/login")({
 });
 
 function Login() {
+  const { redirect } = Route.useSearch();
+  const navigate = useNavigate();
+  const target = safeRedirect(redirect);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [pending, setPending] = useState(0);
+
+  useEffect(() => {
+    setPending(getPending().length);
+    supabase.auth.getUser().then(({ data }) => { if (data.user) navigate({ to: target, replace: true }); });
+  }, [navigate, target]);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!/^\S+@\S+\.\S+$/.test(email) || password.length < 8) {
+      toast.error("Enter a valid email and a password of at least 8 characters.");
+      return;
+    }
+    setBusy(true);
+    try {
+      if (mode === "signup") {
+        const { data, error } = await supabase.auth.signUp({
+          email, password,
+          options: { emailRedirectTo: `${window.location.origin}/login?redirect=${encodeURIComponent(target)}` },
+        });
+        if (error) throw error;
+        if (!data.session) { setSent(true); return; }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      }
+      navigate({ to: target, replace: true });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="bg-grid flex min-h-[70vh] items-center justify-center px-4 py-16">
-      <div className="w-full max-w-md rounded-2xl border bg-card p-8 text-center shadow-card">
+      <div className="w-full max-w-md rounded-2xl border bg-card p-8 shadow-card">
         <UserRound className="mx-auto size-10 text-primary" />
-        <h1 className="mt-4 text-2xl font-bold">Accounts are coming soon</h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Sign-in, saved reports, history and offer comparison arrive in the next phase. You can already check any offer without an account.
-        </p>
-        <Button asChild className="mt-6 w-full"><Link to="/verify">Verify an Offer</Link></Button>
+        <h1 className="mt-4 text-center text-2xl font-bold">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
+        <p className="mt-2 text-center text-sm text-muted-foreground">Save reports, compare offers and reopen your history. Checking an offer never needs an account.</p>
+        {pending > 0 && <p className="mt-4 rounded-lg bg-accent px-3 py-2 text-center text-xs text-accent-foreground">{pending} offer(s) from this visit will be added to your account after you sign in.</p>}
+        {sent ? (
+          <div className="mt-6 rounded-lg border p-4 text-center text-sm">
+            Check <b>{email}</b> for a confirmation link. After confirming you'll come back here and your offers will be kept.
+          </div>
+        ) : (
+          <>
+            <Tabs value={mode} onValueChange={(v) => setMode(v as "signin" | "signup")} className="mt-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="signin">Sign in</TabsTrigger>
+                <TabsTrigger value="signup">Sign up</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <form onSubmit={submit} className="mt-5 space-y-3">
+              <Input type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} aria-label="Email" maxLength={255} />
+              <Input type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} placeholder="Password (8+ characters)" value={password} onChange={(e) => setPassword(e.target.value)} aria-label="Password" maxLength={72} />
+              <Button type="submit" className="w-full" disabled={busy}>
+                {busy && <Loader2 className="size-4 animate-spin" />}{mode === "signin" ? "Sign in" : "Create account"}
+              </Button>
+            </form>
+          </>
+        )}
       </div>
     </div>
   );
