@@ -36,7 +36,7 @@ function History() {
     setDeleting(id);
     const { error } = await supabase.from(table).delete().eq("id", id);
     setDeleting(null);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Deleted");
     qc.invalidateQueries();
   }

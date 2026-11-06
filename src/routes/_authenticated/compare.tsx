@@ -15,7 +15,7 @@ import { ASSESSMENT_META, type Assessment, type Finding } from "@/lib/verify/eng
 import { useImportPending } from "@/hooks/use-import-pending";
 
 export const Route = createFileRoute("/_authenticated/compare")({
-  validateSearch: (s: Record<string, unknown>) => ({ id: typeof s.id === "string" ? s.id : undefined }),
+  validateSearch: (s: Record<string, unknown>): { id?: string } => ({ id: typeof s["id"] === "string" ? s["id"] : undefined }),
   head: () => ({
     meta: [
       { title: "Compare offers — OfferProof" },
@@ -41,8 +41,7 @@ function Compare() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!comparisonId) return;
-    supabase.from("comparisons").select("*").eq("id", comparisonId).maybeSingle().then(({ data }) => {
+    if (comparisonId) supabase.from("comparisons").select("*").eq("id", comparisonId).maybeSingle().then(({ data }) => {
       if (data) { setSelected(data.offer_ids); setName(data.name); } else toast.error("Comparison not found.");
     });
   }, [comparisonId]);
@@ -60,7 +59,7 @@ function Compare() {
     const payload = { name: (name.trim() || `Comparison ${new Date().toLocaleDateString()}`).slice(0, 200), offer_ids: selected };
     const { error } = comparisonId ? await supabase.from("comparisons").update(payload).eq("id", comparisonId) : await supabase.from("comparisons").insert(payload);
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Comparison saved");
     qc.invalidateQueries({ queryKey: ["comparisons"] });
   }
@@ -146,7 +145,7 @@ function EditOffer({ offer, onClose, onSaved }: { offer: OfferRow; onClose: () =
     const { id: _id, user_id: _u, created_at: _c, updated_at: _up, ...rest } = f;
     const { error } = await supabase.from("offers").update({ ...rest, title: rest.title?.trim() || offer.title }).eq("id", offer.id);
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Offer updated");
     onSaved();
   }
