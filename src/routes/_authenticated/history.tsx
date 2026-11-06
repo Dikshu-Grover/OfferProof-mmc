@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { importPending } from "@/lib/offers";
+import { useImportPending } from "@/hooks/use-import-pending";
 import { ASSESSMENT_META, type Assessment } from "@/lib/verify/engine";
 
 export const Route = createFileRoute("/_authenticated/history")({
@@ -22,13 +22,6 @@ export const Route = createFileRoute("/_authenticated/history")({
 });
 
 const tone: Record<Assessment, string> = { high_concern: "bg-high-soft text-high", needs_review: "bg-warn-soft text-foreground", low_concern: "bg-low-soft text-low" };
-
-function useImportPending() {
-  const qc = useQueryClient();
-  useEffect(() => {
-    importPending().then((n) => { if (n) { toast.success(`${n} offer(s) from your visit were saved to your account.`); qc.invalidateQueries(); } });
-  }, [qc]);
-}
 
 function History() {
   useImportPending();
@@ -49,7 +42,7 @@ function History() {
   }
 
   const date = (s: string) => new Date(s).toLocaleString();
-  const Row = ({ children, onDelete, id }: { children: React.ReactNode; onDelete: () => void; id: string }) => (
+  const Row = ({ children, onDelete, id }: { children: ReactNode; onDelete: () => void; id: string }) => (
     <li className="flex items-center justify-between gap-3 rounded-xl border bg-card p-4">
       <div className="min-w-0">{children}</div>
       <Button variant="ghost" size="icon" aria-label="Delete" disabled={deleting === id} onClick={onDelete}><Trash2 className="size-4" /></Button>
@@ -95,4 +88,3 @@ function History() {
   );
 }
 
-export { useImportPending };

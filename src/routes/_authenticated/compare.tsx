@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { AlertOctagon, Check, Loader2, Pencil, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { OfferRow } from "@/lib/offers";
 import { compareOffers, type CompareOffer, type Period } from "@/lib/compare/engine";
 import { ASSESSMENT_META, type Assessment, type Finding } from "@/lib/verify/engine";
-import { useImportPending } from "./history";
+import { useImportPending } from "@/hooks/use-import-pending";
 
 export const Route = createFileRoute("/_authenticated/compare")({
   validateSearch: (s: Record<string, unknown>) => ({ id: typeof s.id === "string" ? s.id : undefined }),
@@ -150,7 +150,7 @@ function EditOffer({ offer, onClose, onSaved }: { offer: OfferRow; onClose: () =
     toast.success("Offer updated");
     onSaved();
   }
-  const L = ({ t, children }: { t: string; children: React.ReactNode }) => <label className="block text-xs text-muted-foreground">{t}<div className="mt-1 text-foreground">{children}</div></label>;
+  const L = ({ t, children }: { t: string; children: ReactNode }) => <label className="block text-xs text-muted-foreground">{t}<div className="mt-1 text-foreground">{children}</div></label>;
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
