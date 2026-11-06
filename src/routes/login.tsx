@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Loader2, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -37,7 +37,7 @@ function Login() {
     supabase.auth.getUser().then(({ data }) => { if (data.user) navigate({ to: target, replace: true }); });
   }, [navigate, target]);
 
-  async function submit(e: React.FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
     if (!/^\S+@\S+\.\S+$/.test(email) || password.length < 8) {
       toast.error("Enter a valid email and a password of at least 8 characters.");
