@@ -71,7 +71,7 @@ function VerifyPage() {
   }
 
   function addAndCheckAnother() {
-    if (session) void saveCurrent().then((ok) => ok && setReport(null));
+    if (session) void saveCurrent().then((ok) => ok && (setReport(null), setText("")));
     else { const n = addPending(text); toast.success(`Kept for comparison (${n}). Sign in when you're ready to compare.`); setReport(null); setText(""); }
   }
 

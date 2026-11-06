@@ -9,3 +9,6 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 - Offer checks live in src/lib/verify/engine.ts as pure TS rules (no React/DOM) so they stay unit-testable; file extraction (pdfjs/tesseract) is dynamically imported, browser-only.
+- User data (offers, verification_reports, comparisons) is read/written from the browser Supabase client in src/lib/offers.ts; owner-only RLS is the security boundary, so no service-role code is needed.
+- Guest offers wait in localStorage (text only) and are imported after sign-in by useImportPending on /history and /compare; the engine re-runs deterministically.
+- Comparison rules live in src/lib/compare/engine.ts (pure, tested); safety signals stay separate from career-fit rows and missing data is shown, never inferred.
