@@ -15,7 +15,7 @@ import { ASSESSMENT_META, type Assessment, type Finding } from "@/lib/verify/eng
 import { useImportPending } from "@/hooks/use-import-pending";
 
 export const Route = createFileRoute("/_authenticated/compare")({
-  validateSearch: (s: Record<string, unknown>): { id?: string } => ({ id: typeof s["id"] === "string" ? s["id"] : undefined }),
+  validateSearch: (s: Record<string, unknown>): { id?: string | undefined } => ({ id: typeof s["id"] === "string" ? s["id"] : undefined }),
   head: () => ({
     meta: [
       { title: "Compare offers — OfferProof" },
