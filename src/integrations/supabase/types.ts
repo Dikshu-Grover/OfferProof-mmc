@@ -14,7 +14,149 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      comparisons: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          offer_ids: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          offer_ids: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          offer_ids?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      offers: {
+        Row: {
+          benefits: string | null
+          company: string | null
+          created_at: string
+          employment_terms: string | null
+          employment_type: string | null
+          growth_rating: number | null
+          id: string
+          job_title: string | null
+          location: string | null
+          notes: string | null
+          offer_text: string | null
+          salary_amount: number | null
+          salary_currency: string | null
+          salary_period: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          work_life_rating: number | null
+          work_mode: string | null
+        }
+        Insert: {
+          benefits?: string | null
+          company?: string | null
+          created_at?: string
+          employment_terms?: string | null
+          employment_type?: string | null
+          growth_rating?: number | null
+          id?: string
+          job_title?: string | null
+          location?: string | null
+          notes?: string | null
+          offer_text?: string | null
+          salary_amount?: number | null
+          salary_currency?: string | null
+          salary_period?: string | null
+          title: string
+          updated_at?: string
+          user_id?: string
+          work_life_rating?: number | null
+          work_mode?: string | null
+        }
+        Update: {
+          benefits?: string | null
+          company?: string | null
+          created_at?: string
+          employment_terms?: string | null
+          employment_type?: string | null
+          growth_rating?: number | null
+          id?: string
+          job_title?: string | null
+          location?: string | null
+          notes?: string | null
+          offer_text?: string | null
+          salary_amount?: number | null
+          salary_currency?: string | null
+          salary_period?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          work_life_rating?: number | null
+          work_mode?: string | null
+        }
+        Relationships: []
+      }
+      verification_reports: {
+        Row: {
+          assessment: string
+          created_at: string
+          extracted: Json
+          findings: Json
+          id: string
+          offer_id: string | null
+          offer_text: string
+          phrases: Json
+          points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assessment: string
+          created_at?: string
+          extracted?: Json
+          findings?: Json
+          id?: string
+          offer_id?: string | null
+          offer_text: string
+          phrases?: Json
+          points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          assessment?: string
+          created_at?: string
+          extracted?: Json
+          findings?: Json
+          id?: string
+          offer_id?: string | null
+          offer_text?: string
+          phrases?: Json
+          points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_reports_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
