@@ -1,4 +1,7 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSession } from "@/hooks/use-session";
+import { supabase } from "@/integrations/supabase/client";
 import { Menu } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Logo } from "./Logo";
@@ -17,6 +20,16 @@ const NAV = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const session = useSession();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  async function signOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    setOpen(false);
+    navigate({ to: "/login", replace: true });
+  }
   return (
     <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
@@ -36,7 +49,14 @@ export function Header() {
         </nav>
         <div className="flex items-center gap-1">
           <ThemeToggle />
-          <Button asChild variant="ghost" className="hidden sm:inline-flex"><Link to="/login">Login</Link></Button>
+          {session ? (
+            <>
+              <Button asChild variant="ghost" className="hidden sm:inline-flex"><Link to="/history">History</Link></Button>
+              <Button variant="ghost" className="hidden sm:inline-flex" onClick={signOut}>Sign out</Button>
+            </>
+          ) : (
+            <Button asChild variant="ghost" className="hidden sm:inline-flex"><Link to="/login" search={{ redirect: undefined }}>Login</Link></Button>
+          )}
           <Button asChild className="hidden sm:inline-flex"><Link to="/verify">Verify Offer</Link></Button>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -45,11 +65,16 @@ export function Header() {
             <SheetContent side="right" className="w-72">
               <SheetTitle className="sr-only">Menu</SheetTitle>
               <div className="mt-8 flex flex-col gap-1">
-                {[...NAV, { to: "/login", label: "Login" } as const].map((n) => (
+                {[...NAV, ...(session ? [{ to: "/history", label: "History" } as const, { to: "/compare", label: "Compare Offers" } as const] : [])].map((n) => (
                   <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="rounded-md px-3 py-2.5 hover:bg-muted">
                     {n.label}
                   </Link>
                 ))}
+                {session ? (
+                  <button type="button" onClick={signOut} className="rounded-md px-3 py-2.5 text-left hover:bg-muted">Sign out</button>
+                ) : (
+                  <Link to="/login" search={{ redirect: undefined }} onClick={() => setOpen(false)} className="rounded-md px-3 py-2.5 hover:bg-muted">Login</Link>
+                )}
                 <Button asChild className="mt-4"><Link to="/verify" onClick={() => setOpen(false)}>Verify Offer</Link></Button>
               </div>
             </SheetContent>

@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { FileUp, Loader2, ScanSearch, Sparkles } from "lucide-react";
+import { Columns3, FileUp, Loader2, Save, ScanSearch, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { analyze, type Report } from "@/lib/verify/engine";
 import { ReportView } from "@/components/verify/ReportView";
+import { useSession } from "@/hooks/use-session";
+import { addPending, saveOfferWithReport } from "@/lib/offers";
 
 export const Route = createFileRoute("/verify")({
   head: () => ({
@@ -42,6 +44,36 @@ function VerifyPage() {
   const [report, setReport] = useState<Report | null>(null);
   const [isSample, setIsSample] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const session = useSession();
+  const navigate = useNavigate();
+  const [savedFor, setSavedFor] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  async function saveCurrent() {
+    if (!report || savedFor === text) return true;
+    setSaving(true);
+    try {
+      await saveOfferWithReport(text, report);
+      setSavedFor(text);
+      toast.success("Saved to your history.");
+      return true;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save.");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function keepForLater(redirect: "/compare" | "/history") {
+    addPending(text);
+    navigate({ to: "/login", search: { redirect } });
+  }
+
+  function addAndCheckAnother() {
+    if (session) void saveCurrent().then((ok) => ok && setReport(null));
+    else { const n = addPending(text); toast.success(`Kept for comparison (${n}). Sign in when you're ready to compare.`); setReport(null); setText(""); }
+  }
 
   async function onFile(file: File | undefined) {
     if (!file) return;
@@ -74,6 +106,16 @@ function VerifyPage() {
     return (
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         {isSample && <p className="mb-4 inline-block rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">Sample report · fictional offer</p>}
+        <div className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3 print:hidden">
+          <span className="mr-auto px-2 text-sm text-muted-foreground">{session ? "Keep this result in your account." : "Sign in to save results and compare offers."}</span>
+          <Button variant="outline" size="sm" disabled={saving || savedFor === text} onClick={() => (session ? saveCurrent() : keepForLater("/history"))}>
+            <Save className="size-4" /> {savedFor === text ? "Saved" : "Save report"}
+          </Button>
+          <Button variant="outline" size="sm" disabled={saving} onClick={addAndCheckAnother}>Add & check another</Button>
+          <Button size="sm" disabled={saving} onClick={async () => { if (!session) return keepForLater("/compare"); if (await saveCurrent()) navigate({ to: "/compare" }); }}>
+            <Columns3 className="size-4" /> Compare Offers
+          </Button>
+        </div>
         <ReportView report={report} text={text} onReset={() => { setReport(null); }} />
       </div>
     );
