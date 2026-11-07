@@ -1,11 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
-import { Columns3, FileUp, Loader2, Save, ScanSearch, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { Columns3, Save, ScanSearch, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
+import { UploadEvidence } from "@/components/verify/UploadEvidence";
 import { analyze, type Report } from "@/lib/verify/engine";
 import { ReportView } from "@/components/verify/ReportView";
 import { useSession } from "@/hooks/use-session";
@@ -18,6 +18,8 @@ export const Route = createFileRoute("/verify")({
       { name: "description", content: "Paste an offer or upload a PDF or screenshot to see warning signs with evidence and next steps." },
       { property: "og:title", content: "Verify an Offer — OfferProof" },
       { property: "og:description", content: "Check a job or internship offer for warning signs in under a minute." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: VerifyPage,
@@ -40,10 +42,10 @@ hr.globaltech.jobs@gmail.com`;
 
 function VerifyPage() {
   const [text, setText] = useState("");
-  const [busy, setBusy] = useState<{ p: number; label: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
   const [isSample, setIsSample] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
   const session = useSession();
   const navigate = useNavigate();
   const [savedFor, setSavedFor] = useState<string | null>(null);
@@ -75,25 +77,8 @@ function VerifyPage() {
     else { const n = addPending(text); toast.success(`Kept for comparison (${n}). Sign in when you're ready to compare.`); setReport(null); setText(""); }
   }
 
-  async function onFile(file: File | undefined) {
-    if (!file) return;
-    setBusy({ p: 0, label: "Preparing" });
-    try {
-      const { extractFromFile } = await import("@/lib/verify/extract-file");
-      const t = await extractFromFile(file, (p, label) => setBusy({ p, label }));
-      if (!t) throw new Error("No text could be read from this file.");
-      setText(t);
-      setIsSample(false);
-      toast.success("Text extracted. Review it below, then run the check.");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not read this file.");
-    } finally {
-      setBusy(null);
-      if (fileRef.current) fileRef.current.value = "";
-    }
-  }
-
   function run() {
+    if (busy || pendingFiles) return;
     if (text.trim().length < 30) {
       toast.error("Please provide at least a few sentences of the offer.");
       return;
@@ -116,7 +101,7 @@ function VerifyPage() {
             <Columns3 className="size-4" /> Compare Offers
           </Button>
         </div>
-        <ReportView report={report} text={text} onReset={() => { setReport(null); }} />
+        <ReportView report={report} text={text} onReset={() => { setReport(null); setPendingFiles(false); }} />
       </div>
     );
 
@@ -133,23 +118,8 @@ function VerifyPage() {
               <TabsTrigger value="paste">Paste text</TabsTrigger>
               <TabsTrigger value="file">Upload PDF / image</TabsTrigger>
             </TabsList>
-            <TabsContent value="file" className="mt-5">
-              <label
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => { e.preventDefault(); onFile(e.dataTransfer.files[0]); }}
-                className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 text-center transition-colors hover:border-primary"
-              >
-                <FileUp className="size-8 text-primary" />
-                <span className="font-medium">Drop a file or click to browse</span>
-                <span className="text-xs text-muted-foreground">PDF, JPG or PNG · up to 10 MB</span>
-                <input ref={fileRef} type="file" accept="application/pdf,image/png,image/jpeg" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} disabled={!!busy} />
-              </label>
-              {busy && (
-                <div className="mt-4">
-                  <p className="flex items-center gap-2 text-sm"><Loader2 className="size-4 animate-spin" /> {busy.label}…</p>
-                  <Progress value={busy.p * 100} className="mt-2" />
-                </div>
-              )}
+            <TabsContent value="file" forceMount className="mt-5 data-[state=inactive]:hidden">
+              <UploadEvidence onText={(value) => { setText(value); setIsSample(false); }} onBusy={setBusy} onPending={setPendingFiles} />
             </TabsContent>
             <TabsContent value="paste" className="mt-5" />
           </Tabs>
@@ -163,7 +133,7 @@ function VerifyPage() {
             </div>
             <Textarea id="offer" value={text} onChange={(e) => { setText(e.target.value); setIsSample(false); }} rows={12} placeholder="Paste the email, message or offer letter here…" maxLength={50000} />
           </div>
-          <Button size="lg" className="mt-5 w-full" onClick={run} disabled={!!busy}>
+          <Button size="lg" className="mt-5 w-full" onClick={run} disabled={busy || pendingFiles}>
             <ScanSearch className="size-4" /> Check this offer
           </Button>
         </div>

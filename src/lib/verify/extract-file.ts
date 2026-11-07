@@ -1,6 +1,6 @@
 // Browser-only text extraction. Import this module dynamically from event handlers.
-export const MAX_FILE_BYTES = 10 * 1024 * 1024;
-export const ACCEPTED = ["application/pdf", "image/png", "image/jpeg"];
+import { ACCEPTED, MAX_FILE_BYTES } from "./upload-batch";
+export { ACCEPTED, MAX_FILE_BYTES } from "./upload-batch";
 
 export async function extractFromFile(file: File, onProgress?: (p: number, label: string) => void): Promise<string> {
   if (!ACCEPTED.includes(file.type)) throw new Error("Only PDF, JPG or PNG files are supported.");
