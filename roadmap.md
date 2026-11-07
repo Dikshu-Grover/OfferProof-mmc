@@ -1,5 +1,7 @@
 # OfferProof roadmap
 
+- [ ] Strengthen verification: corroborated weighted checks, cross-evidence consistency, transparent limitations and regression/browser tests
+
 - [x] Multi-image evidence: picker/drop, add/remove previews, grouped OCR and guest verification tested with 5 and 10 real images; single-image and PDF handling preserved
 
 - [x] Phase 1: design system, light/dark/system theme, all public pages, 3D hero
