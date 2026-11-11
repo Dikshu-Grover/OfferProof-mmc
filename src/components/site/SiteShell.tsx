@@ -51,13 +51,11 @@ export function Header() {
         <div className="flex items-center gap-1">
           <ThemeToggle />
           <Button asChild variant="ghost" className="hidden lg:inline-flex"><CompareOffersLink>Compare Offers</CompareOffersLink></Button>
-          {session ? (
+          {session && (
             <>
               <Button asChild variant="ghost" className="hidden sm:inline-flex"><Link to="/history">History</Link></Button>
               <Button variant="ghost" className="hidden sm:inline-flex" onClick={signOut}>Sign out</Button>
             </>
-          ) : (
-            <Button asChild variant="ghost" className="hidden sm:inline-flex"><Link to="/login" search={{ redirect: undefined }}>Login</Link></Button>
           )}
           <Button asChild className="hidden sm:inline-flex"><Link to="/verify">Verify Offer</Link></Button>
           <Sheet open={open} onOpenChange={setOpen}>
@@ -73,10 +71,8 @@ export function Header() {
                   </Link>
                 ))}
                 <CompareOffersLink onClick={() => setOpen(false)} className="rounded-md px-3 py-2.5 hover:bg-muted">Compare Offers</CompareOffersLink>
-                {session ? (
+                {session && (
                   <button type="button" onClick={signOut} className="rounded-md px-3 py-2.5 text-left hover:bg-muted">Sign out</button>
-                ) : (
-                  <Link to="/login" search={{ redirect: undefined }} onClick={() => setOpen(false)} className="rounded-md px-3 py-2.5 hover:bg-muted">Login</Link>
                 )}
                 <Button asChild className="mt-4"><Link to="/verify" onClick={() => setOpen(false)}>Verify Offer</Link></Button>
               </div>
