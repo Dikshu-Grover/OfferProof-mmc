@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BadgeAlert, Clock, Eye, FileSearch, FileText, GitCompare, KeyRound, ListChecks, MailWarning, ScrollText, TrendingUp } from "lucide-react";
 import { PageHero } from "@/components/site/SiteShell";
+import { CompareOffersLink } from "@/components/site/CompareOffersLink";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/features")({
@@ -45,14 +46,19 @@ function Features() {
       <section className="bg-ink text-ink-foreground">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-20 sm:px-6 md:grid-cols-3">
           {[
-            { icon: GitCompare, t: "Compare offers", d: "Line up company, recruiter, salary, joining date, domain and payment requests side by side. Arriving with accounts." },
-            { icon: ListChecks, t: "Before-you-accept checklist", d: "An interactive list of everything worth verifying yourself, attached to every report." },
-            { icon: ScrollText, t: "Downloadable reports", d: "Save a printable PDF with assessment, evidence, recommendations and disclaimer." },
+            { icon: GitCompare, t: "Compare Job Offers", d: "Line up salary, benefits, credibility and warning signs across two or more offers side by side.", link: true },
+            { icon: ListChecks, t: "Before-you-accept checklist", d: "An interactive list of everything worth verifying yourself, attached to every report.", link: false },
+            { icon: ScrollText, t: "Downloadable reports", d: "Save a printable PDF with assessment, evidence, recommendations and disclaimer.", link: false },
           ].map((f) => (
             <div key={f.t}>
               <f.icon className="size-7 text-electric" />
               <h3 className="mt-4 text-xl font-semibold">{f.t}</h3>
               <p className="mt-2 text-sm text-ink-muted">{f.d}</p>
+              {f.link && (
+                <CompareOffersLink className="mt-3 inline-block text-sm font-medium text-electric hover:underline">
+                  Compare offers now
+                </CompareOffersLink>
+              )}
             </div>
           ))}
         </div>

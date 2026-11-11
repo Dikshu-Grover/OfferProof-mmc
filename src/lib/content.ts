@@ -45,6 +45,7 @@ export const ARTICLES: Article[] = [
 export const FAQS = [
   { q: "Can OfferProof tell me if an offer is definitely real or fake?", a: "No. OfferProof looks for common warning signs and explains each one with evidence. A Low Concern result does not prove an offer is genuine, and a High Concern result does not prove fraud. Always verify with the company directly." },
   { q: "Is the risk category a fraud probability?", a: "No. It is a simple rule-based heuristic that weighs the warning signs we found. It has not been scientifically validated as a probability of fraud." },
+  { q: "Can I compare multiple job offers?", a: "Yes! Log in to OfferProof to compare offers, review key differences, and make a more informed decision." },
   { q: "What file types can I check?", a: "You can paste text, upload a PDF, or upload a JPG or PNG screenshot. Text is extracted in your browser, and you can review and edit it before analysis." },
   { q: "Are my documents uploaded to a server?", a: "Text extraction and analysis run in your browser. Files are not uploaded unless you choose to save a report to your account." },
   { q: "Should I ever pay a fee to get a job?", a: "Legitimate employers almost never ask candidates to pay for registration, training, equipment or background checks. Treat any such request as a serious warning sign." },

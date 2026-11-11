@@ -6,6 +6,7 @@ import { Menu } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
+import { CompareOffersLink } from "./CompareOffersLink";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 
@@ -49,6 +50,7 @@ export function Header() {
         </nav>
         <div className="flex items-center gap-1">
           <ThemeToggle />
+          <Button asChild variant="ghost" className="hidden lg:inline-flex"><CompareOffersLink>Compare Offers</CompareOffersLink></Button>
           {session ? (
             <>
               <Button asChild variant="ghost" className="hidden sm:inline-flex"><Link to="/history">History</Link></Button>
@@ -65,11 +67,12 @@ export function Header() {
             <SheetContent side="right" className="w-72">
               <SheetTitle className="sr-only">Menu</SheetTitle>
               <div className="mt-8 flex flex-col gap-1">
-                {[...NAV, ...(session ? [{ to: "/history", label: "History" } as const, { to: "/compare", label: "Compare Offers" } as const] : [])].map((n) => (
+                {[...NAV, ...(session ? [{ to: "/history", label: "History" } as const] : [])].map((n) => (
                   <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="rounded-md px-3 py-2.5 hover:bg-muted">
                     {n.label}
                   </Link>
                 ))}
+                <CompareOffersLink onClick={() => setOpen(false)} className="rounded-md px-3 py-2.5 hover:bg-muted">Compare Offers</CompareOffersLink>
                 {session ? (
                   <button type="button" onClick={signOut} className="rounded-md px-3 py-2.5 text-left hover:bg-muted">Sign out</button>
                 ) : (
@@ -99,6 +102,7 @@ export function Footer() {
         <div className="flex flex-col gap-2 text-sm">
           <span className="font-display font-semibold">Product</span>
           <Link to="/verify" className="text-ink-muted hover:text-ink-foreground">Verify an offer</Link>
+          <CompareOffersLink className="text-ink-muted hover:text-ink-foreground">Compare offers</CompareOffersLink>
           <Link to="/features" className="text-ink-muted hover:text-ink-foreground">Features</Link>
           <Link to="/how-it-works" className="text-ink-muted hover:text-ink-foreground">How it works</Link>
           <Link to="/scam-awareness" className="text-ink-muted hover:text-ink-foreground">Scam awareness</Link>

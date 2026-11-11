@@ -1,5 +1,7 @@
 # OfferProof roadmap
 
+- [x] Comparison discoverability: homepage mention + Compare Job Offers card, FAQ entry, header/footer/mobile-sheet Compare Offers links with smart login-or-compare redirect
+
 - [ ] Strengthen verification: corroborated weighted checks, cross-evidence consistency, transparent limitations and regression/browser tests
 
 - [x] Multi-image evidence: picker/drop, add/remove previews, grouped OCR and guest verification tested with 5 and 10 real images; single-image and PDF handling preserved

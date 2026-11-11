@@ -13,3 +13,4 @@
 - Guest offers wait in localStorage (text only) and are imported after sign-in by useImportPending on /history and /compare; the engine re-runs deterministically.
 - Comparison rules live in src/lib/compare/engine.ts (pure, tested); safety signals stay separate from career-fit rows and missing data is shown, never inferred.
 - Evidence selections are validated as a batch and extracted sequentially into one text before analysis; failed files block the batch to prevent partial reports, and image previews use revocable local object URLs.
+- Every "Compare Offers" affordance renders through src/components/site/CompareOffersLink.tsx (target logic in src/lib/compare-target.ts) so guests are sent to login with a redirect back to /compare and signed-in users reach /compare directly; never link to /compare directly from a public page.

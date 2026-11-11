@@ -3,6 +3,7 @@ import { ArrowRight, BadgeAlert, Eye, FileSearch, GitCompare, ListChecks, Lock, 
 import { Button } from "@/components/ui/button";
 import { Hero3D } from "@/components/hero/Hero3D";
 import { StepsVisual } from "@/components/site/StepsVisual";
+import { CompareOffersLink } from "@/components/site/CompareOffersLink";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { FAQS } from "@/lib/content";
 
@@ -22,7 +23,7 @@ const FEATURES = [
   { icon: BadgeAlert, title: "Fee & payment detection", text: "Spots registration, security, training and 'refundable' deposit requests." },
   { icon: FileSearch, title: "Domain & link checks", text: "Flags personal emails, look-alike domains, shortened and unencrypted links." },
   { icon: Eye, title: "Highlighted evidence", text: "Every suspicious phrase is marked in your document so you can see why." },
-  { icon: GitCompare, title: "Compare offers", text: "Line up two offers side by side: company, salary, domain, payments." },
+  { icon: GitCompare, title: "Compare Job Offers", text: "Log in to line up two or more offers side by side: salary, benefits, credibility and warning signs." },
   { icon: ListChecks, title: "Before-you-accept checklist", text: "A guided list of what to verify yourself before saying yes." },
   { icon: ScrollText, title: "Downloadable reports", text: "Save a clear report with findings, recommendations and a disclaimer." },
 ];
@@ -44,6 +45,11 @@ function Home() {
               <Button asChild size="lg" variant="outline"><Link to="/how-it-works">Explore How It Works</Link></Button>
             </div>
             <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Lock className="size-4" /> Analysis runs in your browser. Nothing is uploaded unless you save it.</p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Juggling more than one offer?{" "}
+              <CompareOffersLink className="font-medium text-primary hover:underline">Log in to compare offers</CompareOffersLink> side by side — salary, benefits,
+              credibility and warning signs.
+            </p>
           </div>
           <Hero3D />
         </div>
@@ -147,7 +153,10 @@ function Home() {
             <h2 className="mt-4 text-3xl font-bold">Got an offer? Check it before you reply.</h2>
             <p className="mt-2 text-ink-muted">It takes under a minute. Free, no account needed.</p>
           </div>
-          <Button asChild size="lg" variant="secondary"><Link to="/verify">Verify an Offer <ArrowRight className="size-4" /></Link></Button>
+          <div className="flex flex-wrap gap-3">
+            <Button asChild size="lg" variant="secondary"><Link to="/verify">Verify an Offer <ArrowRight className="size-4" /></Link></Button>
+            <Button asChild size="lg" variant="ghost" className="border border-ink-border text-ink-foreground hover:bg-ink-border"><CompareOffersLink>Compare Offers</CompareOffersLink></Button>
+          </div>
         </div>
       </section>
     </>
