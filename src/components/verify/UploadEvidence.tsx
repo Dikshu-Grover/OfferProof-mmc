@@ -4,13 +4,15 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { extractUploadBatch, validateUploadBatch } from "@/lib/verify/upload-batch";
+import type { EvidenceSource } from "@/lib/verify/evidence";
 
 type Selection = { id: number; file: File; preview: string | null };
 
-export function UploadEvidence({ onText, onBusy, onPending }: {
+export function UploadEvidence({ onText, onBusy, onPending, onSources }: {
   onText: (text: string) => void;
   onBusy: (busy: boolean) => void;
   onPending: (pending: boolean) => void;
+  onSources?: (sources: EvidenceSource[]) => void;
 }) {
   const [files, setFiles] = useState<Selection[]>([]);
   const [busy, setBusy] = useState<{ p: number; label: string } | null>(null);
@@ -40,7 +42,7 @@ export function UploadEvidence({ onText, onBusy, onPending }: {
     if (entry.preview) { URL.revokeObjectURL(entry.preview); urls.current.delete(entry.preview); }
     const remaining = files.filter((file) => file.id !== entry.id);
     setFiles(remaining);
-    if (!remaining.length) onText("");
+    if (!remaining.length) { onText(""); onSources?.([]); }
     onPending(remaining.length > 0);
   }
 
@@ -51,8 +53,10 @@ export function UploadEvidence({ onText, onBusy, onPending }: {
     onBusy(true);
     try {
       const { extractFromFile } = await import("@/lib/verify/extract-file");
-      const text = await extractUploadBatch(files.map((entry) => entry.file), extractFromFile, (p, label) => setBusy({ p, label }));
+      const sources: EvidenceSource[] = [];
+      const text = await extractUploadBatch(files.map((entry) => entry.file), (file, progress) => extractFromFile(file, progress, (parts) => sources.push(...parts)), (p, label) => setBusy({ p, label }));
       onText(text);
+      onSources?.(sources.map((source, index) => ({ ...source, id: `source-${index + 1}` })));
       onPending(false);
       toast.success("Text extracted. Review it below, then run the check.");
     } catch (error) {

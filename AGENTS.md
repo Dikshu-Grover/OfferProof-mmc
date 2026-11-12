@@ -11,6 +11,8 @@
 - Offer checks live in src/lib/verify/engine.ts as pure TS rules (no React/DOM) so they stay unit-testable; file extraction (pdfjs/tesseract) is dynamically imported, browser-only.
 - User data (offers, verification_reports, comparisons) is read/written from the browser Supabase client in src/lib/offers.ts; owner-only RLS is the security boundary, so no service-role code is needed.
 - Guest offers wait in localStorage (text only) and are imported after sign-in by useImportPending on /history and /compare; the engine re-runs deterministically.
+- Source-labelled evidence is serialized into the existing offer text; reports retain sources and field statuses inside extracted JSON, so guest import and saved reports preserve provenance without a migration. Legacy plain text and reports remain readable.
+- Risk scoring uses scoreFindings in the verification engine; missing/extraction information stays outside scored warnings, and external identity, document integrity and link availability remain explicitly unchecked unless an actual independent check exists.
 - Comparison rules live in src/lib/compare/engine.ts (pure, tested); safety signals stay separate from career-fit rows and missing data is shown, never inferred.
 - Evidence selections are validated as a batch and extracted sequentially into one text before analysis; failed files block the batch to prevent partial reports, and image previews use revocable local object URLs.
 - Every "Compare Offers" affordance renders through src/components/site/CompareOffersLink.tsx (target logic in src/lib/compare-target.ts) so guests are sent to login with a redirect back to /compare and signed-in users reach /compare directly; never link to /compare directly from a public page.

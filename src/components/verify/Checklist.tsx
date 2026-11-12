@@ -13,7 +13,7 @@ export function Checklist() {
       return n;
     });
   return (
-    <div className="rounded-xl border bg-card p-6 print:hidden">
+    <div className="rounded-xl border bg-card p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h3 className="text-xl font-semibold">Before-you-Accept Checklist</h3>
         <span className="text-sm text-muted-foreground">{done.size} of {all.length} verified</span>
