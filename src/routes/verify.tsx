@@ -10,7 +10,6 @@ import { analyze, type Report } from "@/lib/verify/engine";
 import { ReportView } from "@/components/verify/ReportView";
 import { useSession } from "@/hooks/use-session";
 import { addPending, saveOfferWithReport } from "@/lib/offers";
-import { serializeEvidence, type EvidenceSource } from "@/lib/verify/evidence";
 
 export const Route = createFileRoute("/verify")({
   head: () => ({
@@ -51,19 +50,12 @@ function VerifyPage() {
   const navigate = useNavigate();
   const [savedFor, setSavedFor] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [sources, setSources] = useState<EvidenceSource[]>([]);
-  const [commentary, setCommentary] = useState("");
-  function evidenceText() {
-    const documents: EvidenceSource[] = sources.length ? sources : [{ id: "source-1", name: "Pasted offer", kind: "document", method: "paste", text }];
-    return serializeEvidence([...documents, ...(commentary.trim() ? [{ id: "commentary", name: "Applicant commentary", kind: "commentary" as const, text: commentary }] : [])]);
-  }
-  function resetInput() { setReport(null); setText(""); setSources([]); setCommentary(""); setIsSample(false); setSavedFor(null); }
 
   async function saveCurrent() {
     if (!report || savedFor === text) return true;
     setSaving(true);
     try {
-      await saveOfferWithReport(evidenceText(), report);
+      await saveOfferWithReport(text, report);
       setSavedFor(text);
       toast.success("Saved to your history.");
       return true;
@@ -76,13 +68,13 @@ function VerifyPage() {
   }
 
   function keepForLater(redirect: "/compare" | "/history") {
-    addPending(evidenceText());
+    addPending(text);
     navigate({ to: "/login", search: { redirect } });
   }
 
   function addAndCheckAnother() {
-    if (session) void saveCurrent().then((ok) => ok && resetInput());
-    else { const n = addPending(evidenceText()); toast.success(`Kept for comparison (${n}). Sign in when you're ready to compare.`); resetInput(); }
+    if (session) void saveCurrent().then((ok) => ok && (setReport(null), setText("")));
+    else { const n = addPending(text); toast.success(`Kept for comparison (${n}). Sign in when you're ready to compare.`); setReport(null); setText(""); }
   }
 
   function run() {
@@ -91,7 +83,7 @@ function VerifyPage() {
       toast.error("Please provide at least a few sentences of the offer.");
       return;
     }
-    setReport(analyze(evidenceText()));
+    setReport(analyze(text));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -127,7 +119,7 @@ function VerifyPage() {
               <TabsTrigger value="file">Upload PDF / image</TabsTrigger>
             </TabsList>
             <TabsContent value="file" forceMount className="mt-5 data-[state=inactive]:hidden">
-              <UploadEvidence onText={(value) => { setText(value); setSources([]); setIsSample(false); }} onSources={setSources} onBusy={setBusy} onPending={setPendingFiles} />
+              <UploadEvidence onText={(value) => { setText(value); setIsSample(false); }} onBusy={setBusy} onPending={setPendingFiles} />
             </TabsContent>
             <TabsContent value="paste" className="mt-5" />
           </Tabs>
@@ -135,13 +127,11 @@ function VerifyPage() {
           <div className="mt-5">
             <div className="mb-2 flex items-center justify-between">
               <label htmlFor="offer" className="text-sm font-medium">Offer text {text && <span className="text-muted-foreground">(review and edit before checking)</span>}</label>
-              <Button variant="ghost" size="sm" className="text-xs text-primary" onClick={() => { setText(SAMPLE); setSources([]); setCommentary(""); setIsSample(true); }}>
+              <button type="button" className="text-xs text-primary hover:underline" onClick={() => { setText(SAMPLE); setIsSample(true); }}>
                 <Sparkles className="mr-1 inline size-3" />Try a fictional sample
-              </Button>
+              </button>
             </div>
-            <Textarea id="offer" value={text} onChange={(e) => { const value = e.target.value; setText(value); if (sources.length) setSources([{ id: "source-1", name: "Edited combined evidence (original boundaries unavailable)", kind: "document", method: "edited", text: value }]); setIsSample(false); }} rows={12} placeholder="Paste the email, message or offer letter here…" maxLength={50000} />
-            <label htmlFor="commentary" className="mt-4 mb-2 block text-sm font-medium">Applicant commentary (not employer evidence)</label>
-            <Textarea id="commentary" value={commentary} onChange={(event) => setCommentary(event.target.value)} rows={3} maxLength={10000} />
+            <Textarea id="offer" value={text} onChange={(e) => { setText(e.target.value); setIsSample(false); }} rows={12} placeholder="Paste the email, message or offer letter here…" maxLength={50000} />
           </div>
           <Button size="lg" className="mt-5 w-full" onClick={run} disabled={busy || pendingFiles}>
             <ScanSearch className="size-4" /> Check this offer

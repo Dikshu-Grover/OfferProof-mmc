@@ -17,7 +17,7 @@ function escapeRe(s: string) {
 function Highlighted({ text, phrases }: { text: string; phrases: string[] }) {
   const parts = useMemo(() => {
     if (!phrases.length) return [text];
-    const re = new RegExp(`(${[...phrases].sort((a, b) => b.length - a.length).map(escapeRe).join("|")})`, "gi");
+    const re = new RegExp(`(${phrases.sort((a, b) => b.length - a.length).map(escapeRe).join("|")})`, "gi");
     return text.split(re);
   }, [text, phrases]);
   const lower = phrases.map((p) => p.toLowerCase());
@@ -37,16 +37,11 @@ export function ReportView({ report, text, onReset }: { report: Report; text: st
         ? { Icon: AlertTriangle, cls: "border-warn bg-warn-soft", ic: "text-warn" }
         : { Icon: CheckCircle2, cls: "border-low bg-low-soft", ic: "text-low" };
   const x = report.extracted;
-  const sources = x.sources ?? [{ id: "source-1", name: "Offer document", kind: "document" as const, text }];
-  const recommendations = [...new Set(report.findings.map((finding) => finding.action))].slice(0, 3);
-  if (!recommendations.length) recommendations.push("Confirm the offer and recruiter directly with HR using independently located company contact details.");
   const details: [string, string | null][] = [
     ["Company", x.company],
     ["Recruiter", x.recruiter],
-    ["Recruiter designation", x.recruiterDesignation ?? null],
     ["Job title", x.jobTitle],
     ["Salary / stipend", x.salary],
-    ["Currency", x.currency ?? null],
     ["Joining date", x.joiningDate],
     ["Location", x.location],
     ["Emails", x.emails.join(", ") || null],
@@ -63,8 +58,7 @@ export function ReportView({ report, text, onReset }: { report: Report; text: st
               <p className="eyebrow">Overall assessment</p>
               <h2 className="mt-1 text-3xl font-bold">{meta.label}</h2>
               <p className="mt-2 max-w-2xl text-sm">{meta.summary}</p>
-              <p className="mt-2 text-xs text-muted-foreground">{report.findings.length} warning sign(s) · {report.points} weighted points, not a percentage or fraud probability</p>
-              <p className="mt-1 text-xs text-muted-foreground">Low = 1 · Medium = 3 · High = 6. High Concern requires a serious signal or at least three medium signals totalling 9+ points. Needs Review starts at 3 points.</p>
+              <p className="mt-2 text-xs text-muted-foreground">{report.findings.length} warning sign(s) found · heuristic result, not a fraud probability</p>
             </div>
           </div>
           <div className="flex gap-2 print:hidden">
@@ -87,8 +81,8 @@ export function ReportView({ report, text, onReset }: { report: Report; text: st
                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${SEV[f.severity].cls}`}>{SEV[f.severity].label} severity</span>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                {(f.citations ?? f.evidence.map((passage) => ({ sourceId: "legacy", source: "Saved evidence (original source unavailable)", passage }))).map((citation, index) => (
-                  <blockquote key={`${citation.sourceId}-${index}`} className="w-full rounded bg-muted px-3 py-2 text-sm break-words"><p>“{citation.passage}”</p><cite className="mt-1 block text-xs not-italic text-muted-foreground">{citation.source}</cite></blockquote>
+                {f.evidence.map((e) => (
+                  <code key={e} className="rounded bg-muted px-2 py-1 text-xs break-all">“{e}”</code>
                 ))}
               </div>
               <p className="mt-3 text-sm text-muted-foreground">{f.explanation}</p>
@@ -101,17 +95,12 @@ export function ReportView({ report, text, onReset }: { report: Report; text: st
           <div className="rounded-xl border bg-card p-5">
             <h3 className="font-semibold">Extracted details</h3>
             <dl className="mt-4 space-y-3 text-sm">
-              {details.map(([k, v], index) => {
-                const key = ["company", "recruiter", "recruiterDesignation", "jobTitle", "salary", "currency", "joiningDate", "location", "emails", "phones"][index];
-                const field = key ? (x.fields as Record<string, import("@/lib/verify/engine").FieldInfo> | undefined)?.[key] : undefined;
-                return (
+              {details.map(([k, v]) => (
                 <div key={k}>
                   <dt className="text-xs text-muted-foreground">{k}</dt>
-                  <dd className={v ? "break-words" : "italic text-muted-foreground"}>{v ?? (field?.status === "Ambiguous" ? field.candidates.join(" / ") : "Not found")}</dd>
-                  <dd className="mt-1 text-xs text-muted-foreground">{field?.status ?? (v ? "Extracted" : "Not checked")}{field?.confidence !== undefined && ` · OCR confidence ${Math.round(field.confidence)}% (not field accuracy)`}</dd>
-                  {field?.citations.map((ref, i) => <dd key={i} className="mt-1 text-xs text-muted-foreground break-words">{ref.source}: “{ref.passage}”</dd>)}
+                  <dd className={v ? "break-words" : "italic text-muted-foreground"}>{v ?? "Not found"}</dd>
                 </div>
-              ); })}
+              ))}
             </dl>
           </div>
           <div className="rounded-xl border bg-card p-5">
@@ -121,22 +110,17 @@ export function ReportView({ report, text, onReset }: { report: Report; text: st
             ) : (
               <ul className="mt-3 space-y-2 text-sm">
                 {x.domains.map((d) => <li key={d} className="break-all"><span className="text-muted-foreground">Domain:</span> {d}</li>)}
-                {x.urls.map((u) => <li key={u} className="break-all"><span className="text-muted-foreground">Link:</span> {u}<span className="block text-xs text-muted-foreground">{report.findings.some((finding) => ["suspicious_links", "unencrypted_link"].includes(finding.id) && finding.evidence.some((evidence) => evidence.includes(u))) ? "Suspicious text pattern · destination not checked" : "Not checked · destination not contacted"}</span></li>)}
+                {x.urls.map((u) => <li key={u} className="break-all"><span className="text-muted-foreground">Link:</span> {u}</li>)}
               </ul>
             )}
           </div>
-          {!!x.emailContacts?.length && <div className="rounded-xl border bg-card p-5"><h3 className="font-semibold">Email roles</h3><ul className="mt-3 space-y-2 text-xs">{x.emailContacts.map((contact, index) => <li key={index} className="break-all">{contact.email}<span className="block text-muted-foreground">{contact.role} · {contact.source}</span></li>)}</ul></div>}
         </aside>
       </div>
 
       <div className="rounded-xl border bg-card p-6">
         <h3 className="text-xl font-semibold">Highlighted document</h3>
-        {sources.map((source) => <section key={source.id} className="mt-4"><h4 className="mb-2 text-sm font-semibold break-words">{source.name}{source.kind === "commentary" ? " · excluded from employer checks" : ""}</h4>{source.method && <p className="mb-2 text-xs text-muted-foreground">{source.method}{source.confidence !== undefined && ` · OCR confidence ${Math.round(source.confidence)}%`}</p>}<div className="max-h-[420px] overflow-auto rounded-lg bg-muted/50 p-4 print:max-h-none print:overflow-visible"><Highlighted text={source.text} phrases={source.kind === "commentary" ? [] : report.phrases} /></div></section>)}
+        <div className="mt-4 max-h-[420px] overflow-auto rounded-lg bg-muted/50 p-4"><Highlighted text={text} phrases={report.phrases} /></div>
       </div>
-
-      <section className="border-t pt-6"><h3 className="text-xl font-semibold">Independent verification status</h3><dl className="mt-4 grid gap-4 text-sm sm:grid-cols-3">{["Company identity / registration", "Recruiter authority / domain ownership", "Document authenticity / manipulation"].map((label) => <div key={label}><dt className="font-medium">{label}</dt><dd className="mt-1 text-muted-foreground">Not checked</dd></div>)}</dl><p className="mt-3 text-xs text-muted-foreground">Text checks cannot confirm a company exists, a letter is authentic, or an image was manipulated. Extraction failures and missing fields are not risk points. Original source boundaries are unavailable after combined text is edited.</p></section>
-
-      <section className="border-t pt-6"><h3 className="text-xl font-semibold">Recommendations for this offer</h3><ol className="mt-4 list-decimal space-y-3 pl-5 text-sm">{recommendations.map((action) => <li key={action}>{action}</li>)}</ol></section>
 
       <div className="rounded-2xl bg-ink p-6 text-ink-foreground sm:p-8">
         <p className="eyebrow !text-electric">OfferProof Action Guide</p>
