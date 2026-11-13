@@ -21,6 +21,9 @@ export interface Extracted {
   joiningDate: string | null;
   location: string | null;
   emails: string[];
+  applicantEmails?: string[];
+  recruiterEmails?: string[];
+  unknownEmails?: string[];
   domains: string[];
   urls: string[];
   phones: string[];
@@ -49,7 +52,28 @@ function findAll(text: string, re: RegExp): string[] {
 
 function firstGroup(text: string, re: RegExp): string | null {
   const m = text.match(re);
-  return m?.[1]?.trim().replace(/[.,;]+$/, "") || null;
+  const value = m?.[1]?.trim().replace(/[.,;]+$/, "");
+  return !value || /^(?:not (?:found|provided|stated|specified|available)|n\/?a|unknown|tbd|to be (?:confirmed|discussed)|[-–—]+)$/i.test(value) ? null : value;
+}
+
+/** Attribute only explicitly labelled addresses; an unlabelled address is not a sender. */
+export function classifyEmails(text: string, emails: string[]) {
+  const roles = new Map<string, Set<"applicant" | "recruiter">>();
+  for (const line of text.split(/\n/)) {
+    const labels = [...line.matchAll(/\b(applicant|candidate|recipient|to|from|sender|recruiter|hr|hiring manager|contact)(?:\s+(?:email|e-mail|address))?(?:\s*[:\-]|(?=\s+[A-Z0-9._%+-]+@))/gi)];
+    for (const match of line.matchAll(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi)) {
+      const label = labels.filter((l) => (l.index ?? 0) < (match.index ?? 0)).at(-1)?.[1]?.toLowerCase();
+      if (!label) continue;
+      const email = match[0].toLowerCase();
+      const set = roles.get(email) ?? new Set<"applicant" | "recruiter">();
+      set.add(["applicant", "candidate", "recipient", "to"].includes(label) ? "applicant" : "recruiter");
+      roles.set(email, set);
+    }
+  }
+  const applicantEmails = emails.filter((e) => roles.get(e)?.size === 1 && roles.get(e)?.has("applicant"));
+  const recruiterEmails = emails.filter((e) => roles.get(e)?.size === 1 && roles.get(e)?.has("recruiter"));
+  const unknownEmails = emails.filter((e) => !applicantEmails.includes(e) && !recruiterEmails.includes(e));
+  return { applicantEmails, recruiterEmails, unknownEmails };
 }
 
 export function extract(text: string): Extracted {
@@ -69,11 +93,11 @@ export function extract(text: string): Extracted {
       firstGroup(text, /(?:[Rr]egards|[Ss]incerely|[Rr]ecruiter|HR [Mm]anager|[Hh]iring [Mm]anager)\s*[,:\-]?\s*\n?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/),
     jobTitle: firstGroup(text, /(?:position|role|designation|job title)\s*(?:of)?\s*[:\-]?\s*([^\n,.]{2,60})/i),
     salary:
-      firstGroup(text, /(?:salary|stipend|ctc|compensation|package|pay)\s*(?:of|is)?\s*[:\-]?\s*([^\n]{2,60})/i) ??
-      firstGroup(text, /((?:₹|rs\.?|inr|\$|usd|£|€)\s?[\d,]+(?:\.\d+)?\s*(?:k|lpa|lakhs?|per\s+\w+|\/\s?\w+)?)/i),
+      firstGroup(text, /\b(?:salary|stipend|ctc|compensation|package|pay)\b\s*(?:of|is)?\s*[:\-]?\s*((?:(?:₹|rs\.?|inr|\$|usd|£|€|gbp|eur)\s*)?\d[\d,]*(?:\.\d+)?[^\n;]{0,40})/i),
     joiningDate: firstGroup(text, /(?:joining date|start date|date of joining|report(?:ing)? on|commence on)\s*[:\-]?\s*([^\n]{2,40})/i),
     location: firstGroup(text, /(?:location|work location|based in|office)\s*[:\-]\s*([^\n]{2,50})/i),
     emails,
+    ...classifyEmails(text, emails),
     domains: [...domains],
     urls,
     phones: findAll(text, /(?:\+\d{1,3}[\s-]?)?(?:\(?\d{3,5}\)?[\s-]?)\d{3,5}[\s-]?\d{3,5}/g).filter((p) => p.replace(/\D/g, "").length >= 10),
@@ -103,10 +127,23 @@ function matchPhrases(text: string, patterns: RegExp[]): string[] {
   return [...out];
 }
 
+function paymentPhrases(text: string, patterns: RegExp[]): string[] {
+  // Negation stays within its clause: a separate positive request must still be flagged.
+  const clauses = text.split(/\n|[;!?]|\.(?=\s|$)|\b(?:but|however|instead)\b/i);
+  return clauses.flatMap((clause) => {
+    if (/\b(?:do(?:es)? not|don['’]t|never|not required to|no need to|will not|won['’]t)\b[^,]{0,60}\b(?:pay|deposit|transfer|send|forward)\b/i.test(clause) ||
+        /\bno\s+(?:\w+\s+){0,3}(?:fees?|charges?|payments?)\b/i.test(clause) ||
+        /\b(?:fees?|charges?|payments?)\s+(?:are\s+)?(?:not required|not payable|waived)\b/i.test(clause) ||
+        /\b(?:employer|company|we)\s+(?:will\s+)?(?:pay|cover|bear)\b/i.test(clause)) return [];
+    return matchPhrases(clause, patterns);
+  });
+}
+
 const FEE = [
   /\b(?:registration|security|processing|refundable|application|joining|verification|documentation|kit|uniform|deposit)\s+(?:fee|fees|charge|charges|amount|deposit)\b/i,
   /\bpay(?:ment)?\s+(?:of\s+)?(?:₹|rs\.?|inr|\$|usd)\s?[\d,]+/i,
   /\b(?:deposit|transfer|send)\s+(?:the\s+)?(?:amount|money|fee)/i,
+  /\bpay\s+(?:a\s+|the\s+)?fees?\b/i,
 ];
 const TRAINING = [/\b(?:training|onboarding|certification|laptop|equipment)\s+(?:fee|fees|cost|charges|payment)\b/i, /\bpay\s+for\s+(?:your\s+)?(?:training|laptop|certification)/i];
 const URGENCY = [
@@ -131,7 +168,7 @@ export function analyze(text: string): Report {
   const x = extract(t);
   const findings: Finding[] = [];
 
-  const fee = matchPhrases(t, FEE);
+  const fee = paymentPhrases(t, FEE);
   if (fee.length)
     findings.push({
       id: "payment_request",
@@ -142,7 +179,7 @@ export function analyze(text: string): Report {
       action: "Do not pay. Contact the company through the phone or email listed on its official website and ask whether this fee is real.",
     });
 
-  const training = matchPhrases(t, TRAINING);
+  const training = paymentPhrases(t, TRAINING);
   if (training.length)
     findings.push({
       id: "training_payment",
@@ -151,6 +188,18 @@ export function analyze(text: string): Report {
       evidence: training,
       explanation: "Asking new hires to pay for training, certification or a laptop is a common pattern in fake internships and job scams.",
       action: "Ask for the company's written policy on training costs and confirm it with HR via an official channel before paying anything.",
+    });
+
+  const chequeDeposit = paymentPhrases(t, [/\b(?:deposit|cash)\s+(?:(?:this|the|a|your)\s+)?(?:cheque|check)\b/i]);
+  const forwardMoney = paymentPhrases(t, [/\b(?:forward|send|transfer|wire)\s+(?:(?:the|remaining|remaining balance|some|excess)\s+)?(?:money|funds|balance|payment)\b[^\n.!?]{0,100}\b(?:vendor|supplier|third[- ]party)\b/i]);
+  if (chequeDeposit.length && forwardMoney.length)
+    findings.push({
+      id: "cheque_fraud",
+      name: "Potential cheque fraud",
+      severity: "high",
+      evidence: [...chequeDeposit, ...forwardMoney],
+      explanation: "A request to deposit a cheque and forward funds to a vendor is a fake-cheque scam pattern. Funds may appear available before the bank discovers the cheque is invalid; this is a warning, not proof of fraud.",
+      action: "Do not forward funds. Ask your bank to investigate the cheque and verify the request independently with the employer.",
     });
 
   const urgency = matchPhrases(t, URGENCY);
@@ -186,7 +235,8 @@ export function analyze(text: string): Report {
       action: "Compare the salary with published ranges for the same role and city on trusted job sites.",
     });
 
-  const freeMail = x.emails.filter((e) => FREE_MAIL.includes((e.split("@")[1] ?? "")));
+  const senderEmails = x.recruiterEmails ?? [];
+  const freeMail = senderEmails.filter((e) => FREE_MAIL.includes((e.split("@")[1] ?? "")));
   if (freeMail.length)
     findings.push({
       id: "personal_email",
@@ -197,7 +247,8 @@ export function analyze(text: string): Report {
       action: "Find the company's official careers or HR email on its website and forward the offer there to confirm it.",
     });
 
-  const corpDomains = [...new Set(x.domains.filter((d) => !FREE_MAIL.includes(d) && !SHORTENERS.includes(d)).map(rootDomain))];
+  const employerDomains = [...senderEmails.map((e) => e.split("@")[1] ?? ""), ...x.urls.map(hostOf).filter((d): d is string => !!d)];
+  const corpDomains = [...new Set(employerDomains.filter((d) => !FREE_MAIL.includes(d) && !SHORTENERS.includes(d)).map(rootDomain))];
   if (x.company && corpDomains.length) {
     const key = x.company.toLowerCase().replace(/(pvt|ltd|inc|llc|technologies|solutions|limited|corp(oration)?|[^a-z])/g, "");
     const mismatched = corpDomains.filter((d) => key.length >= 3 && !d.replace(/[^a-z]/g, "").includes(key.slice(0, Math.min(5, key.length))));
@@ -211,12 +262,12 @@ export function analyze(text: string): Report {
         action: "Search for the company's official website independently and compare its domain with the one in this offer.",
       });
   }
-  if (corpDomains.length > 1 && x.emails.length && new Set(x.emails.map((e) => rootDomain(e.split("@")[1] ?? ""))).size > 1)
+  if (corpDomains.length > 1 && new Set(senderEmails.map((e) => rootDomain(e.split("@")[1] ?? ""))).size > 1)
     findings.push({
       id: "multiple_domains",
       name: "Multiple sender domains",
       severity: "low",
-      evidence: x.emails,
+      evidence: senderEmails,
       explanation: "The offer mentions emails from more than one domain, which can indicate an inconsistent or copied document.",
       action: "Confirm which domain the company actually uses.",
     });

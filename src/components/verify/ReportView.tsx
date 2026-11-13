@@ -1,6 +1,6 @@
 import { AlertOctagon, AlertTriangle, CheckCircle2, Info, Printer } from "lucide-react";
 import { Fragment, useMemo } from "react";
-import { ASSESSMENT_META, type Report, type Severity } from "@/lib/verify/engine";
+import { ASSESSMENT_META, classifyEmails, type Report, type Severity } from "@/lib/verify/engine";
 import { Button } from "@/components/ui/button";
 import { Checklist } from "./Checklist";
 
@@ -37,6 +37,7 @@ export function ReportView({ report, text, onReset }: { report: Report; text: st
         ? { Icon: AlertTriangle, cls: "border-warn bg-warn-soft", ic: "text-warn" }
         : { Icon: CheckCircle2, cls: "border-low bg-low-soft", ic: "text-low" };
   const x = report.extracted;
+  const emailRoles = classifyEmails(text, x.emails);
   const details: [string, string | null][] = [
     ["Company", x.company],
     ["Recruiter", x.recruiter],
@@ -44,7 +45,9 @@ export function ReportView({ report, text, onReset }: { report: Report; text: st
     ["Salary / stipend", x.salary],
     ["Joining date", x.joiningDate],
     ["Location", x.location],
-    ["Emails", x.emails.join(", ") || null],
+    ["Applicant emails", emailRoles.applicantEmails.join(", ") || null],
+    ["Recruiter / contact emails", emailRoles.recruiterEmails.join(", ") || null],
+    ["Emails (owner unclear)", emailRoles.unknownEmails.join(", ") || null],
     ["Phone numbers", x.phones.join(", ") || null],
   ];
 
@@ -94,6 +97,7 @@ export function ReportView({ report, text, onReset }: { report: Report; text: st
         <aside className="space-y-6">
           <div className="rounded-xl border bg-card p-5">
             <h3 className="font-semibold">Extracted details</h3>
+            <p className="mt-2 text-xs text-muted-foreground">Details found in the offer; employer identity has not been independently verified.</p>
             <dl className="mt-4 space-y-3 text-sm">
               {details.map(([k, v]) => (
                 <div key={k}>

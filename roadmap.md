@@ -2,7 +2,8 @@
 
 - [x] Comparison discoverability: homepage mention + Compare Job Offers card, FAQ entry, header/footer/mobile-sheet Compare Offers links with smart login-or-compare redirect
 
-- [ ] Strengthen verification: corroborated weighted checks, cross-evidence consistency, transparent limitations and regression/browser tests
+- [ ] Broader verification improvements deferred: document integrity, independent company checks and comprehensive cross-evidence consistency (outside the current minimal bug-fix scope)
+- [x] Critical verification fixes: negated fees, cheque-forwarding fraud, email ownership, missing details and employer-verification limits; 32 regression tests and live guest-report checks passed
 
 - [x] Multi-image evidence: picker/drop, add/remove previews, grouped OCR and guest verification tested with 5 and 10 real images; single-image and PDF handling preserved
 
