@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Columns3, Save, ScanSearch, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -22,8 +22,19 @@ export const Route = createFileRoute("/verify")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: VerifyPage,
+  component: VerificationFlow,
 });
+
+function VerificationFlow() {
+  const router = useRouter();
+  const [attempt, setAttempt] = useState(0);
+  // Same-route links retain React state by default. A completed navigation to
+  // /verify starts a new attempt, including upload and checklist child state.
+  useEffect(() => router.subscribe("onResolved", ({ toLocation }) => {
+    if (toLocation.pathname === "/verify") setAttempt((value) => value + 1);
+  }), [router]);
+  return <VerifyPage key={attempt} />;
+}
 
 const SAMPLE = `Dear Candidate,
 

@@ -9,6 +9,7 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 - Offer checks live in src/lib/verify/engine.ts as pure TS rules (no React/DOM) so they stay unit-testable; file extraction (pdfjs/tesseract) is dynamically imported, browser-only.
+- Completed navigation to /verify remounts its verification attempt, including same-route links, so transient offer, upload and checklist state cannot leak into a new check.
 - Email ownership is derived from explicit address labels; only recruiter/contact addresses feed sender-domain checks, while ambiguous addresses remain unattributed to avoid applicant-driven warnings.
 - User data (offers, verification_reports, comparisons) is read/written from the browser Supabase client in src/lib/offers.ts; owner-only RLS is the security boundary, so no service-role code is needed.
 - Guest offers wait in localStorage (text only) and are imported after sign-in by useImportPending on /history and /compare; the engine re-runs deterministically.

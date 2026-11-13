@@ -1,5 +1,7 @@
 # OfferProof roadmap
 
+- [ ] Repeat verification: reset transient offer/upload/results/checklist state when navigating to Verify Offer; verify repeated desktop and mobile flows.
+
 - [x] Comparison discoverability: homepage mention + Compare Job Offers card, FAQ entry, header/footer/mobile-sheet Compare Offers links with smart login-or-compare redirect
 
 - [ ] Broader verification improvements deferred: document integrity, independent company checks and comprehensive cross-evidence consistency (outside the current minimal bug-fix scope)
