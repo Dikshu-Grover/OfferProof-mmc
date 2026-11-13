@@ -3,6 +3,7 @@ import { Fragment, useMemo } from "react";
 import { ASSESSMENT_META, classifyEmails, type Report, type Severity } from "@/lib/verify/engine";
 import { Button } from "@/components/ui/button";
 import { Checklist } from "./Checklist";
+import { parseSalary } from "@/lib/compare/engine";
 
 const SEV: Record<Severity, { label: string; cls: string; bar: string }> = {
   high: { label: "High", cls: "bg-high-soft text-high", bar: "border-high" },
@@ -37,12 +38,17 @@ export function ReportView({ report, text, onReset }: { report: Report; text: st
         ? { Icon: AlertTriangle, cls: "border-warn bg-warn-soft", ic: "text-warn" }
         : { Icon: CheckCircle2, cls: "border-low bg-low-soft", ic: "text-low" };
   const x = report.extracted;
+  const salary = parseSalary(x.salary);
+  const salaryPeriods = { year: "annual", month: "monthly", week: "weekly", day: "daily", hour: "hourly" };
+  const salaryDisplay = salary.amount !== null
+    ? [salary.amount.toLocaleString(salary.currency === "INR" ? "en-IN" : "en-US"), salary.currency, salary.period ? salaryPeriods[salary.period] : null].filter(Boolean).join(" · ")
+    : x.salary;
   const emailRoles = classifyEmails(text, x.emails);
   const details: [string, string | null][] = [
     ["Company", x.company],
     ["Recruiter", x.recruiter],
     ["Job title", x.jobTitle],
-    ["Salary / stipend", x.salary],
+    ["Salary / stipend", salaryDisplay],
     ["Joining date", x.joiningDate],
     ["Location", x.location],
     ["Applicant emails", emailRoles.applicantEmails.join(", ") || null],

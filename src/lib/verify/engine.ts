@@ -93,7 +93,7 @@ export function extract(text: string): Extracted {
       firstGroup(text, /(?:[Rr]egards|[Ss]incerely|[Rr]ecruiter|HR [Mm]anager|[Hh]iring [Mm]anager)\s*[,:\-]?\s*\n?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/),
     jobTitle: firstGroup(text, /(?:position|role|designation|job title)\s*(?:of)?\s*[:\-]?\s*([^\n,.]{2,60})/i),
     salary:
-      firstGroup(text, /\b(?:salary|stipend|ctc|compensation|package|pay)\b\s*(?:of|is)?\s*[:\-]?\s*((?:(?:₹|rs\.?|inr|\$|usd|£|€|gbp|eur)\s*)?\d[\d,]*(?:\.\d+)?[^\n;]{0,40})/i),
+      firstGroup(text, /\b(?:salary|stipend|ctc|compensation|package|pay)\b\s*(?:of|is)?\s*[:\-]?\s*((?:(?:₹|rs\.?|inr|\$|usd|£|€|gbp|eur)\s*)?\d[\d,]*(?:\.\d+)?(?:[ \t]*(?:inr|usd|gbp|eur))?(?:\s*(?:per\s+(?:year|annum|month|week|day|hour)|annual(?:ly)?|monthly|lpa))?[^\n;]{0,40})/i),
     joiningDate: firstGroup(text, /(?:joining date|start date|date of joining|report(?:ing)? on|commence on)\s*[:\-]?\s*([^\n]{2,40})/i),
     location: firstGroup(text, /(?:location|work location|based in|office)\s*[:\-]\s*([^\n]{2,50})/i),
     emails,

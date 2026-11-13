@@ -1,7 +1,19 @@
 import { describe, it, expect } from "vitest";
 import { analyze } from "./engine";
+import { parseSalary } from "../compare/engine";
 
 describe("offer engine", () => {
+  it.each([
+    "Salary: ₹4,80,000 per year",
+    "Salary:\n₹4,80,000\nper year",
+    "Salary: 4,80,000 INR\nper year",
+  ])("extracts the explicit annual INR salary from offer text: %s", (text) => {
+    const report = analyze(`${text}\nCompany: Acme Technologies Pvt Ltd\nPosition: Engineer\nLocation: Bengaluru`);
+    expect(parseSalary(report.extracted.salary)).toEqual({ amount: 480000, currency: "INR", period: "year" });
+    expect(report.extracted.salary).not.toContain("Company");
+    expect(report.findings.find((f) => f.id === "missing_details")?.evidence ?? []).not.toContain("Not found: Salary / stipend");
+  });
+
   it("flags a registration fee as high concern", () => {
     const r = analyze("Congratulations! Pay a registration fee of Rs 2,500 within 24 hours. Contact: hr.jobs@gmail.com");
     expect(r.assessment).toBe("high_concern");
