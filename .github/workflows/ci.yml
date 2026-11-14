@@ -38,3 +38,4 @@ jobs:
 
       - name: Test production build
         run: npm run build
+
