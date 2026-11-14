@@ -30,8 +30,8 @@ An explainable, privacy-first platform that helps students and job seekers verif
 | Presentation deck (up to 8 slides) | `<ADD LINK>` |
 | Recorded walkthrough (up to 5 minutes) | `<ADD LINK>` |
 | Written summary (up to 3 pages) | `<ADD LINK>` |
-| Full technical documentation | [`docs/README.md`](./docs/README.md) |
-| Technical report (Word) | [`docs/OfferProof_Documentation.docx`](./docs/OfferProof_Documentation.docx) |
+| Full technical documentation | `<ADD LINK>` |
+| Technical report (Word) | `<ADD LINK>` |
 
 ---
 
@@ -197,33 +197,6 @@ sequenceDiagram
         Browser-->>User: "Saved to your history"
     end
 ```
-
----
-
-## Multi-User Session Isolation
-
-Each browser window/tab gets a unique session ID generated with `crypto.randomUUID()` (or a timestamp fallback) stored in `sessionStorage`.
-
-```
-sessionStorage["offerproof:session:id"]     → "abc-uuid-..."
-sessionStorage["offerproof:session:state:abc-uuid-..."] → { text, report, ... }
-```
-
-Because `sessionStorage` is strictly scoped to one browser tab, no two sessions can read or overwrite each other's state — including across different browsers (Firefox vs Chrome).
-
-The session ID also travels in the `offerproof-ai-recommendations` request body so the Edge Function echoes it back; the client validates `data.sessionId === effectiveSessionId` before applying any response, preventing cross-session race conditions.
-
----
-
-## Security Boundary Summary
-
-| Layer | Mechanism |
-|---|---|
-| **Browser ↔ Supabase DB** | Publishable key + JWT Bearer token; Row Level Security on every table |
-| **Browser ↔ Edge Functions** | Supabase `functions.invoke()` (auto-attaches user JWT) |
-| **Edge Function ↔ NVIDIA** | `NVIDIA_API_KEY` Supabase secret — never exposed to client |
-| **Edge Function ↔ BigQuery** | `GOOGLE_SERVICE_ACCOUNT_JSON` Supabase secret; short-lived OAuth2 access token minted at request time |
-| **SSR server auth** | `requireSupabaseAuth` middleware validates JWT before any server function runs |
 
 ---
 
