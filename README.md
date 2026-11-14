@@ -401,7 +401,7 @@ See [`docs/10-future-scope.md`](./docs/10-future-scope.md) and [`docs/roadmap.md
 | Member | GitHub | Track | Individual contributions |
 |---|---|---|---|
 | **Dikshu Grover** | `<@username>` | Cloud Engineering | Delivery lead; product lead; frontend development `<CONFIRM / ADD DETAILS>` |
-| **Justice Otuya** | `<@username>` | AI Cloud Leadership | Intake and workflow; backend and AI integration `<CONFIRM / ADD DETAILS>` |
+| **Janet Gichia** | `<@username>` | AI Cloud Leadership | Intake and workflow; backend and AI integration `<CONFIRM / ADD DETAILS>` |
 | **Mehzad Muqadas** | `<@username>` | Cloud Cybersecurity | Verification module; permissions and evidence testing `<CONFIRM / ADD DETAILS>` |
 | **Moses Otieno** | `<@username>` | Cloud Cybersecurity | Evidence comparison module; permissions and evidence testing `<CONFIRM / ADD DETAILS>` |
 
