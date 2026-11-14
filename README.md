@@ -356,6 +356,7 @@ Coverage areas include the fraud-detection rules (including negation handling), 
 | AI recommendations panel | `<ADD SCREENSHOT>` |
 | Offer comparison | `<ADD SCREENSHOT>` |
 | Scam Awareness Centre | `<ADD SCREENSHOT>` |
+| BigQuery Dataset | `<ADD SCREENSHOT>` |
 
 **Recorded walkthrough (up to 5 minutes):** `<ADD LINK>`
 **Presentation deck (up to 8 slides):** `<ADD LINK>`
