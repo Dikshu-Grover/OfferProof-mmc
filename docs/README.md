@@ -18,7 +18,7 @@ Welcome to the comprehensive technical documentation for **OfferProof**, an expl
 | **08** | [Setup & Deployment](./08-setup-and-deployment.md) | Prerequisites, environment configuration, database migrations, running tests, and deployment |
 | **09** | [Security & Testing](./09-security-and-testing.md) | Data privacy, multi-user session isolation, 11 Vitest test suites, and troubleshooting |
 | **10** | [Future Scope](./10-future-scope.md) | Current boundaries, technical trade-offs, and enhancement roadmap |
-| **11** | [Application Sitemap & Routes](./11-sitemap.md) | Complete route hierarchy, visual navigation diagram, route guards, and SEO sitemap |
+| **11** | [Application Sitemap & Routes](docs/sitemap.md) | Complete route hierarchy, visual navigation diagram, route guards, and SEO sitemap |
 
 ---
 
