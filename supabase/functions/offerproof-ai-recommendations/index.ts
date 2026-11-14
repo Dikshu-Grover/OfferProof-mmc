@@ -42,13 +42,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   // Validate HTTP method
   if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Method not allowed. Use POST." }),
-      {
-        status: 405,
-        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: "Method not allowed. Use POST." }), {
+      status: 405,
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    });
   }
 
   // Retrieve API key safely
@@ -61,7 +58,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       {
         status: 500,
         headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      }
+      },
     );
   }
 
@@ -70,13 +67,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
   try {
     payload = await req.json();
   } catch {
-    return new Response(
-      JSON.stringify({ error: "Invalid JSON in request body." }),
-      {
-        status: 400,
-        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: "Invalid JSON in request body." }), {
+      status: 400,
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    });
   }
 
   const rawOfferText = typeof payload.offerText === "string" ? payload.offerText.trim() : "";
@@ -86,7 +80,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       {
         status: 400,
         headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      }
+      },
     );
   }
 
@@ -94,8 +88,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // The AI only needs the offer's structure and language to give advice —
   // not the applicant's personal contact information.
   const offerText = rawOfferText
-    .replace(/\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b/g, "[EMAIL REDACTED]")
-    .replace(/(?:\+91[\s\-]?)?(?:\(?0?\d{2,4}\)?[\s\-]?)?\d{5}[\s\-]?\d{5}/g, "[PHONE REDACTED]")
+    .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, "[EMAIL REDACTED]")
+    .replace(/(?:\+91[\s-]?)?(?:\(?0?\d{2,4}\)?[\s-]?)?\d{5}[\s-]?\d{5}/g, "[PHONE REDACTED]")
     .replace(/\b\d{10,12}\b/g, "[PHONE REDACTED]");
 
   // Extract optional verification context (supports either payload.context or top-level properties)
@@ -118,9 +112,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
     contextSummaryParts.push(`Existing detected indicators:\n${list}`);
   }
 
-  const contextBlock = contextSummaryParts.length > 0
-    ? `\n\n--- Verification Context ---\n${contextSummaryParts.join("\n")}`
-    : "";
+  const contextBlock =
+    contextSummaryParts.length > 0
+      ? `\n\n--- Verification Context ---\n${contextSummaryParts.join("\n")}`
+      : "";
 
   const systemPrompt =
     "You are OfferProof AI, an objective career advisor specializing in job and internship offer reviews.\n" +
@@ -149,7 +144,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: MODEL_NAME,
@@ -176,7 +171,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         {
           status: 502,
           headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-        }
+        },
       );
     }
 
@@ -191,7 +186,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         {
           status: 502,
           headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-        }
+        },
       );
     }
 
@@ -205,19 +200,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
       {
         status: 200,
         headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error: unknown) {
     clearTimeout(timeoutId);
 
     if (error instanceof DOMException && error.name === "AbortError") {
-      return new Response(
-        JSON.stringify({ error: "NVIDIA API request timed out." }),
-        {
-          status: 504,
-          headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "NVIDIA API request timed out." }), {
+        status: 504,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
     }
 
     console.error("Error invoking NVIDIA API:", error instanceof Error ? error.message : error);
@@ -226,7 +218,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       {
         status: 500,
         headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      }
+      },
     );
   }
 });

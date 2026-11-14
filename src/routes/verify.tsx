@@ -22,9 +22,16 @@ export const Route = createFileRoute("/verify")({
   head: () => ({
     meta: [
       { title: "Verify an Offer — OfferProof" },
-      { name: "description", content: "Paste an offer or upload a PDF or screenshot to see warning signs with evidence and next steps." },
+      {
+        name: "description",
+        content:
+          "Paste an offer or upload a PDF or screenshot to see warning signs with evidence and next steps.",
+      },
       { property: "og:title", content: "Verify an Offer — OfferProof" },
-      { property: "og:description", content: "Check a job or internship offer for warning signs in under a minute." },
+      {
+        property: "og:description",
+        content: "Check a job or internship offer for warning signs in under a minute.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -39,12 +46,16 @@ function VerificationFlow() {
 
   // Same-route links retain React state by default. A completed navigation to
   // /verify starts a new attempt for this browser session only.
-  useEffect(() => router.subscribe("onResolved", ({ toLocation }) => {
-    if (toLocation.pathname === "/verify") {
-      clearSessionState(sessionId);
-      setAttempt((value) => value + 1);
-    }
-  }), [router, sessionId]);
+  useEffect(
+    () =>
+      router.subscribe("onResolved", ({ toLocation }) => {
+        if (toLocation.pathname === "/verify") {
+          clearSessionState(sessionId);
+          setAttempt((value) => value + 1);
+        }
+      }),
+    [router, sessionId],
+  );
 
   return (
     <VerifyPage
@@ -90,7 +101,9 @@ function VerifyPage({
   const navigate = useNavigate();
   const [savedFor, setSavedFor] = useState<string | null>(() => savedState?.savedFor ?? null);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<"paste" | "file">(() => savedState?.activeTab ?? "paste");
+  const [activeTab, setActiveTab] = useState<"paste" | "file">(
+    () => savedState?.activeTab ?? "paste",
+  );
   const [uploaded, setUploaded] = useState(() => savedState?.uploaded ?? false);
   const [showExtracted, setShowExtracted] = useState(() => savedState?.showExtracted ?? false);
 
@@ -158,14 +171,36 @@ function VerifyPage({
   if (report)
     return (
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-        {isSample && <p className="mb-4 inline-block rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">Sample report · fictional offer</p>}
+        {isSample && (
+          <p className="mb-4 inline-block rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
+            Sample report · fictional offer
+          </p>
+        )}
         <div className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3 print:hidden">
-          <span className="mr-auto px-2 text-sm text-muted-foreground">{session ? "Keep this result in your account." : "Sign in to save results and compare offers."}</span>
-          <Button variant="outline" size="sm" disabled={saving || savedFor === text} onClick={() => (session ? saveCurrent() : keepForLater("/history"))}>
+          <span className="mr-auto px-2 text-sm text-muted-foreground">
+            {session
+              ? "Keep this result in your account."
+              : "Sign in to save results and compare offers."}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={saving || savedFor === text}
+            onClick={() => (session ? saveCurrent() : keepForLater("/history"))}
+          >
             <Save className="size-4" /> {savedFor === text ? "Saved" : "Save report"}
           </Button>
-          <Button variant="outline" size="sm" disabled={saving} onClick={addAndCheckAnother}>Add & check another</Button>
-          <Button size="sm" disabled={saving} onClick={async () => { if (!session) return keepForLater("/compare"); if (await saveCurrent()) navigate({ to: "/compare" }); }}>
+          <Button variant="outline" size="sm" disabled={saving} onClick={addAndCheckAnother}>
+            Add & check another
+          </Button>
+          <Button
+            size="sm"
+            disabled={saving}
+            onClick={async () => {
+              if (!session) return keepForLater("/compare");
+              if (await saveCurrent()) navigate({ to: "/compare" });
+            }}
+          >
             <Columns3 className="size-4" /> Compare Offers
           </Button>
         </div>
@@ -191,7 +226,10 @@ function VerifyPage({
       <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
         <p className="eyebrow">Verify an offer</p>
         <h1 className="mt-3 text-4xl font-bold">What did they send you?</h1>
-        <p className="mt-3 text-muted-foreground">Heuristic checks run entirely in your browser. If you request AI recommendations, redacted offer text is sent to NVIDIA's API.</p>
+        <p className="mt-3 text-muted-foreground">
+          Heuristic checks run entirely in your browser. If you request AI recommendations, redacted
+          offer text is sent to NVIDIA's API.
+        </p>
 
         <div className="mt-8 rounded-2xl border bg-card p-6 shadow-card">
           <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as "paste" | "file")}>
@@ -227,7 +265,12 @@ function VerifyPage({
                       onClick={() => setShowExtracted((prev) => !prev)}
                       className="text-xs text-primary hover:underline gap-1.5"
                     >
-                      <ChevronDown className={cn("size-3.5 transition-transform", showExtracted && "rotate-180")} />
+                      <ChevronDown
+                        className={cn(
+                          "size-3.5 transition-transform",
+                          showExtracted && "rotate-180",
+                        )}
+                      />
                       {showExtracted ? "Hide extracted text" : "Expand extracted text"}
                     </Button>
                   </div>
@@ -235,7 +278,10 @@ function VerifyPage({
                     <Textarea
                       id="offer"
                       value={text}
-                      onChange={(e) => { setText(e.target.value); setIsSample(false); }}
+                      onChange={(e) => {
+                        setText(e.target.value);
+                        setIsSample(false);
+                      }}
                       rows={10}
                       placeholder="Extracted offer text…"
                       maxLength={50000}
@@ -247,7 +293,10 @@ function VerifyPage({
                   <Textarea
                     id="offer"
                     value={text}
-                    onChange={(e) => { setText(e.target.value); setIsSample(false); }}
+                    onChange={(e) => {
+                      setText(e.target.value);
+                      setIsSample(false);
+                    }}
                     rows={12}
                     placeholder="Paste the email, message or offer letter here…"
                     maxLength={50000}
@@ -258,12 +307,36 @@ function VerifyPage({
           ) : (
             <div className="mt-5">
               <div className="mb-2 flex items-center justify-between">
-                <label htmlFor="offer" className="text-sm font-medium">Offer text {text && <span className="text-muted-foreground">(review and edit before checking)</span>}</label>
-                <button type="button" className="text-xs text-primary hover:underline" onClick={() => { setText(SAMPLE); setIsSample(true); setUploaded(false); }}>
-                  <Sparkles className="mr-1 inline size-3" />Try a fictional sample
+                <label htmlFor="offer" className="text-sm font-medium">
+                  Offer text{" "}
+                  {text && (
+                    <span className="text-muted-foreground">(review and edit before checking)</span>
+                  )}
+                </label>
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => {
+                    setText(SAMPLE);
+                    setIsSample(true);
+                    setUploaded(false);
+                  }}
+                >
+                  <Sparkles className="mr-1 inline size-3" />
+                  Try a fictional sample
                 </button>
               </div>
-              <Textarea id="offer" value={text} onChange={(e) => { setText(e.target.value); setIsSample(false); }} rows={12} placeholder="Paste the email, message or offer letter here…" maxLength={50000} />
+              <Textarea
+                id="offer"
+                value={text}
+                onChange={(e) => {
+                  setText(e.target.value);
+                  setIsSample(false);
+                }}
+                rows={12}
+                placeholder="Paste the email, message or offer letter here…"
+                maxLength={50000}
+              />
             </div>
           )}
           <Button size="lg" className="mt-5 w-full" onClick={run} disabled={busy || pendingFiles}>

@@ -2,9 +2,22 @@ import { describe, expect, it } from "vitest";
 import { annualSalary, compareOffers, parseSalary, type CompareOffer } from "./engine";
 
 const base = (p: Partial<CompareOffer>): CompareOffer => ({
-  id: "x", title: "X", company: null, job_title: null, salary_amount: null, salary_currency: null, salary_period: null,
-  benefits: null, location: null, work_mode: null, employment_type: null, employment_terms: null,
-  growth_rating: null, work_life_rating: null, safety: null, ...p,
+  id: "x",
+  title: "X",
+  company: null,
+  job_title: null,
+  salary_amount: null,
+  salary_currency: null,
+  salary_period: null,
+  benefits: null,
+  location: null,
+  work_mode: null,
+  employment_type: null,
+  employment_terms: null,
+  growth_rating: null,
+  work_life_rating: null,
+  safety: null,
+  ...p,
 });
 
 describe("compare engine", () => {
@@ -13,7 +26,11 @@ describe("compare engine", () => {
   });
 
   it("parses ₹45,000 per month", () => {
-    expect(parseSalary("₹45,000 per month")).toEqual({ amount: 45000, currency: "INR", period: "month" });
+    expect(parseSalary("₹45,000 per month")).toEqual({
+      amount: 45000,
+      currency: "INR",
+      period: "month",
+    });
   });
 
   it("parses 6 LPA as 600000 per year", () => {
@@ -38,14 +55,20 @@ describe("compare engine", () => {
   });
 
   it("reports missing fields instead of inventing them", () => {
-    const c = compareOffers([base({ id: "a", title: "A", job_title: "Dev" }), base({ id: "b", title: "B" })]);
+    const c = compareOffers([
+      base({ id: "a", title: "A", job_title: "Dev" }),
+      base({ id: "b", title: "B" }),
+    ]);
     expect(c.missing.find((m) => m.id === "b")?.fields).toContain("Role");
     expect(c.career.find((r) => r.key === "benefits")!.values[0]!.display).toBe("Not provided");
   });
 
   it("keeps safety separate and flags high concern", () => {
     const c = compareOffers([
-      base({ id: "a", safety: { assessment: "high_concern", warnings: ["Payment or fee requested"] } }),
+      base({
+        id: "a",
+        safety: { assessment: "high_concern", warnings: ["Payment or fee requested"] },
+      }),
       base({ id: "b", safety: { assessment: "low_concern", warnings: [] } }),
     ]);
     expect(c.safety[0]!.warnings).toEqual(["Payment or fee requested"]);

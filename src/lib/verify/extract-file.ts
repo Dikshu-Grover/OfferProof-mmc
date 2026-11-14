@@ -2,7 +2,10 @@
 import { ACCEPTED, MAX_FILE_BYTES } from "./upload-batch";
 export { ACCEPTED, MAX_FILE_BYTES } from "./upload-batch";
 
-export async function extractFromFile(file: File, onProgress?: (p: number, label: string) => void): Promise<string> {
+export async function extractFromFile(
+  file: File,
+  onProgress?: (p: number, label: string) => void,
+): Promise<string> {
   if (!ACCEPTED.includes(file.type)) throw new Error("Only PDF, JPG or PNG files are supported.");
   if (file.size > MAX_FILE_BYTES) throw new Error("File is larger than 10 MB.");
 
@@ -33,7 +36,8 @@ export async function extractFromFile(file: File, onProgress?: (p: number, label
       pages.push(out.join("\n"));
     }
     const text = pages.join("\n\n").trim();
-    if (!text) throw new Error("This PDF has no selectable text. Try uploading a screenshot of it instead.");
+    if (!text)
+      throw new Error("This PDF has no selectable text. Try uploading a screenshot of it instead.");
     return text;
   }
 

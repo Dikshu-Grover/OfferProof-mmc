@@ -60,11 +60,12 @@ async function getGoogleAccessToken(sa: ServiceAccount, signal: AbortSignal): Pr
   const claimSet = base64Url(
     JSON.stringify({
       iss: sa.client_email,
-      scope: "https://www.googleapis.com/auth/bigquery.readonly https://www.googleapis.com/auth/cloud-platform.read-only",
+      scope:
+        "https://www.googleapis.com/auth/bigquery.readonly https://www.googleapis.com/auth/cloud-platform.read-only",
       aud: sa.token_uri || "https://oauth2.googleapis.com/token",
       exp: now + 3600,
       iat: now,
-    })
+    }),
   );
 
   const unsignedToken = `${header}.${claimSet}`;
@@ -75,13 +76,13 @@ async function getGoogleAccessToken(sa: ServiceAccount, signal: AbortSignal): Pr
     keyBytes.buffer,
     { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
     false,
-    ["sign"]
+    ["sign"],
   );
 
   const signatureBuffer = await crypto.subtle.sign(
     "RSASSA-PKCS1-v1_5",
     cryptoKey,
-    new TextEncoder().encode(unsignedToken)
+    new TextEncoder().encode(unsignedToken),
   );
 
   const signature = base64Url(new Uint8Array(signatureBuffer));
@@ -109,13 +110,17 @@ async function getGoogleAccessToken(sa: ServiceAccount, signal: AbortSignal): Pr
 async function runBigQueryQuery(
   accessToken: string,
   query: string,
-  signal: AbortSignal
-): Promise<{ schema?: { fields: Array<{ name: string; type: string }> }; rows?: Array<{ f: Array<{ v: unknown }> }>; totalRows?: string }> {
+  signal: AbortSignal,
+): Promise<{
+  schema?: { fields: Array<{ name: string; type: string }> };
+  rows?: Array<{ f: Array<{ v: unknown }> }>;
+  totalRows?: string;
+}> {
   const endpoint = `https://bigquery.googleapis.com/bigquery/v2/projects/${BQ_PROJECT_ID}/queries`;
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -137,7 +142,7 @@ async function runBigQueryQuery(
 
 function parseBigQueryRows(
   schema?: { fields: Array<{ name: string }> },
-  rows?: Array<{ f: Array<{ v: unknown }> }>
+  rows?: Array<{ f: Array<{ v: unknown }> }>,
 ): Array<Record<string, unknown>> {
   if (!schema?.fields || !rows || !Array.isArray(rows)) return [];
   const fieldNames = schema.fields.map((f) => f.name);
@@ -156,10 +161,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Method not allowed. Use POST." }),
-      { status: 405, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Method not allowed. Use POST." }), {
+      status: 405,
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    });
   }
 
   const serviceAccountJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON")?.trim();
@@ -168,7 +173,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       JSON.stringify({
         error: "GOOGLE_SERVICE_ACCOUNT_JSON is not configured in Supabase environment secrets.",
       }),
-      { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
     );
   }
 
@@ -184,7 +189,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         error: "Invalid GOOGLE_SERVICE_ACCOUNT_JSON secret format.",
         details: err instanceof Error ? err.message : "Malformed JSON",
       }),
-      { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
     );
   }
 
@@ -196,7 +201,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   const search = typeof payload.search === "string" ? payload.search.trim() : "";
-  const filter = payload.filter === "fraudulent" || payload.filter === "legitimate" ? payload.filter : "all";
+  const filter =
+    payload.filter === "fraudulent" || payload.filter === "legitimate" ? payload.filter : "all";
   const limit = Math.min(Math.max(Number(payload.limit) || 25, 1), 100);
   const offset = Math.max(Number(payload.offset) || 0, 0);
   const includeSummary = payload.includeSummary !== false;
@@ -212,7 +218,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (filter === "fraudulent") {
       conditions.push("IFNULL(LOWER(TRIM(CAST(fraudulent AS STRING))) IN ('1', 'true'), FALSE)");
     } else if (filter === "legitimate") {
-      conditions.push("NOT IFNULL(LOWER(TRIM(CAST(fraudulent AS STRING))) IN ('1', 'true'), FALSE)");
+      conditions.push(
+        "NOT IFNULL(LOWER(TRIM(CAST(fraudulent AS STRING))) IN ('1', 'true'), FALSE)",
+      );
     }
 
     if (search) {
@@ -254,14 +262,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const [recordsResult, summaryResult] = await Promise.all(queryPromises);
     clearTimeout(timeoutId);
 
-    const bqRecords = recordsResult as { schema?: { fields: Array<{ name: string; type: string }> }; rows?: Array<{ f: Array<{ v: unknown }> }>; totalRows?: string };
+    const bqRecords = recordsResult as {
+      schema?: { fields: Array<{ name: string; type: string }> };
+      rows?: Array<{ f: Array<{ v: unknown }> }>;
+      totalRows?: string;
+    };
     const rawRecords = parseBigQueryRows(bqRecords.schema, bqRecords.rows);
     const records = rawRecords.map((r) => {
       const isFraud =
         r.fraudulent === 1 ||
         r.fraudulent === "1" ||
         r.fraudulent === true ||
-        (typeof r.fraudulent === "string" && (r.fraudulent.toLowerCase() === "true" || r.fraudulent.trim() === "1"));
+        (typeof r.fraudulent === "string" &&
+          (r.fraudulent.toLowerCase() === "true" || r.fraudulent.trim() === "1"));
       return {
         ...r,
         fraudulent: isFraud ? 1 : 0,
@@ -270,7 +283,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     let summary = null;
     if (summaryResult) {
-      const bqSummary = summaryResult as { schema?: { fields: Array<{ name: string; type: string }> }; rows?: Array<{ f: Array<{ v: unknown }> }> };
+      const bqSummary = summaryResult as {
+        schema?: { fields: Array<{ name: string; type: string }> };
+        rows?: Array<{ f: Array<{ v: unknown }> }>;
+      };
       const parsedSummary = parseBigQueryRows(bqSummary.schema, bqSummary.rows)[0];
       if (parsedSummary) {
         const total = Number(parsedSummary.total_count) || 0;
@@ -299,7 +315,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         offset,
         limit,
       }),
-      { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
     );
   } catch (error: unknown) {
     clearTimeout(timeoutId);
@@ -307,7 +323,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (error instanceof DOMException && error.name === "AbortError") {
       return new Response(
         JSON.stringify({ error: "BigQuery request timed out after 25 seconds." }),
-        { status: 504, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+        { status: 504, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
       );
     }
 
@@ -317,7 +333,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         error: "Failed to query BigQuery dataset.",
         details: error instanceof Error ? error.message : "Unknown error",
       }),
-      { status: 502, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+      { status: 502, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
     );
   }
 });

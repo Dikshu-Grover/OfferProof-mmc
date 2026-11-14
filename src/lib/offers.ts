@@ -37,7 +37,11 @@ export function safeRedirect(r: unknown): string {
 export async function saveOfferWithReport(text: string, report: Report = analyze(text)) {
   const x = report.extracted;
   const sal = parseSalary(x.salary);
-  const title = (x.jobTitle && x.company && x.jobTitle.toLowerCase().includes(" at ") ? x.jobTitle : [x.jobTitle, x.company].filter(Boolean).join(" at ")) || `Offer saved ${new Date().toLocaleDateString()}`;
+  const title =
+    (x.jobTitle && x.company && x.jobTitle.toLowerCase().includes(" at ")
+      ? x.jobTitle
+      : [x.jobTitle, x.company].filter(Boolean).join(" at ")) ||
+    `Offer saved ${new Date().toLocaleDateString()}`;
   const { data: offer, error } = await supabase
     .from("offers")
     .insert({

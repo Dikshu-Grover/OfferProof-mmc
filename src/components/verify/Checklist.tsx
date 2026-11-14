@@ -9,14 +9,20 @@ export function Checklist() {
   const toggle = (i: string) =>
     setDone((d) => {
       const n = new Set(d);
-      n.has(i) ? n.delete(i) : n.add(i);
+      if (n.has(i)) {
+        n.delete(i);
+      } else {
+        n.add(i);
+      }
       return n;
     });
   return (
     <div className="rounded-xl border bg-card p-6 print:hidden">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h3 className="text-xl font-semibold">Before-you-Accept Checklist</h3>
-        <span className="text-sm text-muted-foreground">{done.size} of {all.length} verified</span>
+        <span className="text-sm text-muted-foreground">
+          {done.size} of {all.length} verified
+        </span>
       </div>
       <Progress value={(done.size / all.length) * 100} className="mt-4" />
       <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -27,8 +33,14 @@ export function Checklist() {
               {g.items.map((i) => (
                 <li key={i}>
                   <label className="flex cursor-pointer items-start gap-3 text-sm">
-                    <Checkbox checked={done.has(i)} onCheckedChange={() => toggle(i)} className="mt-0.5" />
-                    <span className={done.has(i) ? "text-muted-foreground line-through" : ""}>{i}</span>
+                    <Checkbox
+                      checked={done.has(i)}
+                      onCheckedChange={() => toggle(i)}
+                      className="mt-0.5"
+                    />
+                    <span className={done.has(i) ? "text-muted-foreground line-through" : ""}>
+                      {i}
+                    </span>
                   </label>
                 </li>
               ))}

@@ -19,7 +19,9 @@ describe("Compare Offers discoverability", () => {
 
   it("answers the comparison question in the FAQ with the agreed wording", () => {
     const entry = FAQS.find((f) => f.q === "Can I compare multiple job offers?");
-    expect(entry?.a).toBe("Yes! Log in to OfferProof to compare offers, review key differences, and make a more informed decision.");
+    expect(entry?.a).toBe(
+      "Yes! Log in to OfferProof to compare offers, review key differences, and make a more informed decision.",
+    );
   });
 
   it("shows that FAQ answer in the homepage preview", () => {

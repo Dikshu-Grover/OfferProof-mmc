@@ -91,14 +91,17 @@ function JobPostingsExplorer() {
       setError(null);
 
       try {
-        const { data, error: fnError } = await supabase.functions.invoke("offerproof-job-postings", {
-          body: {
-            search: searchQuery.trim(),
-            filter: filterValue,
-            limit: 30,
-            includeSummary: true,
+        const { data, error: fnError } = await supabase.functions.invoke(
+          "offerproof-job-postings",
+          {
+            body: {
+              search: searchQuery.trim(),
+              filter: filterValue,
+              limit: 30,
+              includeSummary: true,
+            },
           },
-        });
+        );
 
         if (currentReq !== reqIdRef.current) return;
 
@@ -125,7 +128,8 @@ function JobPostingsExplorer() {
         }
       } catch (err: unknown) {
         if (currentReq !== reqIdRef.current) return;
-        const msg = err instanceof Error ? err.message : "Unable to retrieve BigQuery job postings.";
+        const msg =
+          err instanceof Error ? err.message : "Unable to retrieve BigQuery job postings.";
         setError(msg);
       } finally {
         if (currentReq === reqIdRef.current) {
@@ -133,7 +137,7 @@ function JobPostingsExplorer() {
         }
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -195,7 +199,8 @@ function JobPostingsExplorer() {
                 {summary.legitimate.toLocaleString()}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                {summary.total > 0 ? ((summary.legitimate / summary.total) * 100).toFixed(1) : 0}% of dataset
+                {summary.total > 0 ? ((summary.legitimate / summary.total) * 100).toFixed(1) : 0}%
+                of dataset
               </p>
             </div>
             <div className="rounded-xl border bg-muted/30 p-4">
@@ -277,7 +282,8 @@ function JobPostingsExplorer() {
           <Loader2 className="size-7 animate-spin text-primary" />
           <p className="text-sm font-medium text-foreground">Querying BigQuery dataset…</p>
           <p className="text-xs text-muted-foreground">
-            Fetching records from xenon-hub-514707-f9.offerproof_analytics.job_postings (asia-south1)
+            Fetching records from xenon-hub-514707-f9.offerproof_analytics.job_postings
+            (asia-south1)
           </p>
         </div>
       )}
@@ -288,7 +294,9 @@ function JobPostingsExplorer() {
           <div className="flex items-start gap-3">
             <AlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
             <div className="flex-1 space-y-2">
-              <h4 className="font-semibold text-foreground">BigQuery dataset preview unavailable</h4>
+              <h4 className="font-semibold text-foreground">
+                BigQuery dataset preview unavailable
+              </h4>
               <p className="text-sm text-muted-foreground">{error}</p>
               <div className="rounded-lg bg-background p-3 text-xs text-muted-foreground">
                 <p>
@@ -456,7 +464,9 @@ function JobPostingsExplorer() {
                         <div>
                           <span className="text-muted-foreground">Experience: </span>
                           <span className="font-medium text-foreground">
-                            {r.required_experience ? String(r.required_experience) : "Not specified"}
+                            {r.required_experience
+                              ? String(r.required_experience)
+                              : "Not specified"}
                           </span>
                         </div>
                         <div>
@@ -512,7 +522,11 @@ function Awareness() {
           </TabsList>
 
           {/* Tab 1: Learn - All existing scam awareness content preserved exactly */}
-          <TabsContent value="learn" forceMount className="mt-8 space-y-10 pb-16 data-[state=inactive]:hidden">
+          <TabsContent
+            value="learn"
+            forceMount
+            className="mt-8 space-y-10 pb-16 data-[state=inactive]:hidden"
+          >
             <nav className="flex flex-wrap gap-2">
               {ARTICLES.map((a) => (
                 <a

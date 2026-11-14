@@ -97,17 +97,22 @@ describe("Scam Awareness Centre with Explore Data tab", () => {
 
     // Context banner
     expect(screen.getByText("Job Postings Analytics Dataset")).toBeDefined();
-    expect(screen.getByText(/xenon-hub-514707-f9\.offerproof_analytics\.job_postings/)).toBeDefined();
+    expect(
+      screen.getByText(/xenon-hub-514707-f9\.offerproof_analytics\.job_postings/),
+    ).toBeDefined();
 
     // Verify invoke was called
     await waitFor(() => {
-      expect(mockInvoke).toHaveBeenCalledWith("offerproof-job-postings", expect.objectContaining({
-        body: expect.objectContaining({
-          filter: "all",
-          limit: 30,
-          includeSummary: true,
+      expect(mockInvoke).toHaveBeenCalledWith(
+        "offerproof-job-postings",
+        expect.objectContaining({
+          body: expect.objectContaining({
+            filter: "all",
+            limit: 30,
+            includeSummary: true,
+          }),
         }),
-      }));
+      );
     });
 
     // Breakdown stats
@@ -149,11 +154,14 @@ describe("Scam Awareness Centre with Explore Data tab", () => {
     fireEvent.click(fraudFilterBtn);
 
     await waitFor(() => {
-      expect(mockInvoke).toHaveBeenCalledWith("offerproof-job-postings", expect.objectContaining({
-        body: expect.objectContaining({
-          filter: "fraudulent",
+      expect(mockInvoke).toHaveBeenCalledWith(
+        "offerproof-job-postings",
+        expect.objectContaining({
+          body: expect.objectContaining({
+            filter: "fraudulent",
+          }),
         }),
-      }));
+      );
     });
   });
 

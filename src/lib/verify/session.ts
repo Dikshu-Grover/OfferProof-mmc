@@ -68,7 +68,10 @@ export function loadSessionState(sessionId: string): Partial<VerificationSession
 /**
  * Saves the verification state scoped strictly to the given session ID.
  */
-export function saveSessionState(sessionId: string, state: Partial<VerificationSessionState>): void {
+export function saveSessionState(
+  sessionId: string,
+  state: Partial<VerificationSessionState>,
+): void {
   if (typeof window === "undefined" || !sessionId) return;
   try {
     const payload: VerificationSessionState = {

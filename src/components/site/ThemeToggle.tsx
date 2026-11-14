@@ -18,9 +18,15 @@ export function ThemeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setPref("light")}><Sun className="size-4" /> Light</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setPref("dark")}><Moon className="size-4" /> Dark</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setPref("system")}><Monitor className="size-4" /> System</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setPref("light")}>
+          <Sun className="size-4" /> Light
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setPref("dark")}>
+          <Moon className="size-4" /> Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setPref("system")}>
+          <Monitor className="size-4" /> System
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

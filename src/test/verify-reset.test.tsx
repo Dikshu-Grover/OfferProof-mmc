@@ -1,7 +1,9 @@
 import { act, fireEvent, render, screen, cleanup } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const navigation = vi.hoisted(() => ({ listener: undefined as undefined | ((event: { toLocation: { pathname: string } }) => void) }));
+const navigation = vi.hoisted(() => ({
+  listener: undefined as undefined | ((event: { toLocation: { pathname: string } }) => void),
+}));
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (options: unknown) => options,
   useNavigate: () => vi.fn(),
@@ -10,7 +12,9 @@ vi.mock("@tanstack/react-router", () => ({
 const router = {
   subscribe: (_event: string, listener: typeof navigation.listener) => {
     navigation.listener = listener;
-    return () => { navigation.listener = undefined; };
+    return () => {
+      navigation.listener = undefined;
+    };
   },
 };
 vi.mock("@/hooks/use-session", () => ({ useSession: () => null }));
@@ -29,10 +33,17 @@ describe("new verification navigation", () => {
       expect(input).not.toBeNull();
       expect(input?.value).toBe("");
       if (!input) throw new Error("Fresh offer input missing");
-      fireEvent.change(input, { target: { value: "Company: Acme Technologies\nPosition: Engineer\nSalary: ₹4,80,000 per year\nLocation: Bengaluru" } });
+      fireEvent.change(input, {
+        target: {
+          value:
+            "Company: Acme Technologies\nPosition: Engineer\nSalary: ₹4,80,000 per year\nLocation: Bengaluru",
+        },
+      });
       fireEvent.click(screen.getByRole("button", { name: "Check this offer" }));
       const checkboxes = screen.getAllByRole("checkbox");
-      expect(checkboxes.every((checkbox) => checkbox.getAttribute("aria-checked") === "false")).toBe(true);
+      expect(
+        checkboxes.every((checkbox) => checkbox.getAttribute("aria-checked") === "false"),
+      ).toBe(true);
       const firstCheckbox = checkboxes[0];
       if (!firstCheckbox) throw new Error("Checklist missing");
       fireEvent.click(firstCheckbox);

@@ -111,7 +111,9 @@ describe("AiRecommendations component", () => {
       error: null,
     });
 
-    const { rerender } = render(<AiRecommendations text="Same text content" report={sampleReport} />);
+    const { rerender } = render(
+      <AiRecommendations text="Same text content" report={sampleReport} />,
+    );
 
     await waitFor(() => {
       expect(screen.getByText("Stable recommendation")).toBeDefined();

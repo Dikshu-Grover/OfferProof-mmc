@@ -68,7 +68,18 @@ function Shield() {
   return (
     <group position={[1.35, -0.75, 0.9]} scale={0.75} rotation={[0, -0.5, 0]}>
       <mesh>
-        <extrudeGeometry args={[shape, { depth: 0.25, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.06, bevelSegments: 4 }]} />
+        <extrudeGeometry
+          args={[
+            shape,
+            {
+              depth: 0.25,
+              bevelEnabled: true,
+              bevelThickness: 0.08,
+              bevelSize: 0.06,
+              bevelSegments: 4,
+            },
+          ]}
+        />
         <meshStandardMaterial color="#2c4fb8" metalness={0.9} roughness={0.22} />
       </mesh>
       <mesh position={[0, 0.02, 0.36]} rotation={[0, 0, -0.78]}>
@@ -101,15 +112,28 @@ export default function HeroScene({ dark, reduced }: { dark: boolean; reduced: b
       camera={{ position: [0, 0, 6.2], fov: 38 }}
       gl={{ antialias: true, alpha: true }}
       frameloop={reduced ? "demand" : "always"}
-      onCreated={({ gl }) => gl.domElement.parentElement?.parentElement?.setAttribute("data-scene-ready", "true")}
+      onCreated={({ gl }) =>
+        gl.domElement.parentElement?.parentElement?.setAttribute("data-scene-ready", "true")
+      }
     >
       <ambientLight intensity={dark ? 0.5 : 0.8} />
       <directionalLight position={[3, 4, 5]} intensity={dark ? 1.4 : 1.8} />
       <pointLight position={[-3, -1, 2]} intensity={dark ? 6 : 2} color="#60a5fa" />
       <Environment resolution={128}>
         <Lightformer intensity={2} position={[0, 5, 0]} scale={[10, 10, 1]} />
-        <Lightformer intensity={1.2} color="#9ec5ff" position={[-5, 1, -1]} rotation-y={Math.PI / 2} scale={[20, 1, 1]} />
-        <Lightformer intensity={1} position={[5, 0, 2]} rotation-y={-Math.PI / 2} scale={[10, 2, 1]} />
+        <Lightformer
+          intensity={1.2}
+          color="#9ec5ff"
+          position={[-5, 1, -1]}
+          rotation-y={Math.PI / 2}
+          scale={[20, 1, 1]}
+        />
+        <Lightformer
+          intensity={1}
+          position={[5, 0, 2]}
+          rotation-y={-Math.PI / 2}
+          scale={[10, 2, 1]}
+        />
       </Environment>
       <Float speed={reduced ? 0 : 1.2} rotationIntensity={0.25} floatIntensity={0.5}>
         <Doc reduced={reduced} />

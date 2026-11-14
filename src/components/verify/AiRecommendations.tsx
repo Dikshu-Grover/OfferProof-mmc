@@ -45,8 +45,12 @@ export function parseStructuredRecommendations(raw: string): StructuredSections 
 
     // Detect Verification Steps heading
     if (
-      /^(?:#+\s*|\*{1,2}\s*|\d+[\.\)]\s*)?verification\s*(?:steps|procedures|checks)?(?::|\*{1,2})?$/i.test(line) ||
-      (/verification\s+steps/i.test(line) && line.length < 50 && (line.startsWith("#") || line.startsWith("*") || line.endsWith(":")))
+      /^(?:#+\s*|\*{1,2}\s*|\d+[.)]\s*)?verification\s*(?:steps|procedures|checks)?(?::|\*{1,2})?$/i.test(
+        line,
+      ) ||
+      (/verification\s+steps/i.test(line) &&
+        line.length < 50 &&
+        (line.startsWith("#") || line.startsWith("*") || line.endsWith(":")))
     ) {
       currentSection = "verificationSteps";
       continue;
@@ -54,8 +58,12 @@ export function parseStructuredRecommendations(raw: string): StructuredSections 
 
     // Detect Recruiter Questions heading
     if (
-      /^(?:#+\s*|\*{1,2}\s*|\d+[\.\)]\s*)?(?:recruiter\s+questions|questions\s+(?:for\s+the\s+|to\s+ask\s+(?:the\s+)?)?recruiter)(?::|\*{1,2})?$/i.test(line) ||
-      (/(?:recruiter\s+questions|questions\s+for\s+the\s+recruiter)/i.test(line) && line.length < 60 && (line.startsWith("#") || line.startsWith("*") || line.endsWith(":")))
+      /^(?:#+\s*|\*{1,2}\s*|\d+[.)]\s*)?(?:recruiter\s+questions|questions\s+(?:for\s+the\s+|to\s+ask\s+(?:the\s+)?)?recruiter)(?::|\*{1,2})?$/i.test(
+        line,
+      ) ||
+      (/(?:recruiter\s+questions|questions\s+for\s+the\s+recruiter)/i.test(line) &&
+        line.length < 60 &&
+        (line.startsWith("#") || line.startsWith("*") || line.endsWith(":")))
     ) {
       currentSection = "recruiterQuestions";
       continue;
@@ -63,15 +71,22 @@ export function parseStructuredRecommendations(raw: string): StructuredSections 
 
     // Detect Important Precautions heading
     if (
-      /^(?:#+\s*|\*{1,2}\s*|\d+[\.\)]\s*)?(?:important\s+)?precautions|safety\s+precautions|warning\s+precautions(?::|\*{1,2})?$/i.test(line) ||
-      (/(?:important\s+precautions|precautions)/i.test(line) && line.length < 50 && (line.startsWith("#") || line.startsWith("*") || line.endsWith(":")))
+      /^(?:#+\s*|\*{1,2}\s*|\d+[.)]\s*)?(?:important\s+)?precautions|safety\s+precautions|warning\s+precautions(?::|\*{1,2})?$/i.test(
+        line,
+      ) ||
+      (/(?:important\s+precautions|precautions)/i.test(line) &&
+        line.length < 50 &&
+        (line.startsWith("#") || line.startsWith("*") || line.endsWith(":")))
     ) {
       currentSection = "precautions";
       continue;
     }
 
     // Clean bullet markers: "- ", "* ", "1. ", "• "
-    const cleaned = line.replace(/^(?:[-*•]\s+|\d+[\.\)]\s+)/, "").replace(/^\*{1,2}|\*{1,2}$/g, "").trim();
+    const cleaned = line
+      .replace(/^(?:[-*•]\s+|\d+[.)]\s+)/, "")
+      .replace(/^\*{1,2}|\*{1,2}$/g, "")
+      .trim();
     if (!cleaned) continue;
 
     if (currentSection === "verificationSteps") {
@@ -132,20 +147,23 @@ export function AiRecommendations({ text, report, sessionId }: AiRecommendations
       setError(null);
 
       try {
-        const { data, error: fnError } = await supabase.functions.invoke("offerproof-ai-recommendations", {
-          body: {
-            sessionId: effectiveSessionId,
-            offerText: trimmedText,
-            context: {
+        const { data, error: fnError } = await supabase.functions.invoke(
+          "offerproof-ai-recommendations",
+          {
+            body: {
               sessionId: effectiveSessionId,
-              assessment: report.assessment,
-              findings: report.findings,
-              company: report.extracted.company,
-              jobTitle: report.extracted.jobTitle,
-              salary: report.extracted.salary,
+              offerText: trimmedText,
+              context: {
+                sessionId: effectiveSessionId,
+                assessment: report.assessment,
+                findings: report.findings,
+                company: report.extracted.company,
+                jobTitle: report.extracted.jobTitle,
+                salary: report.extracted.salary,
+              },
             },
           },
-        });
+        );
 
         if (fnError) {
           throw new Error(fnError.message || "Failed to load AI recommendations.");
@@ -166,14 +184,15 @@ export function AiRecommendations({ text, report, sessionId }: AiRecommendations
           throw new Error("No recommendations returned.");
         }
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "Unable to generate recommendations right now.";
+        const message =
+          err instanceof Error ? err.message : "Unable to generate recommendations right now.";
         setError(message);
       } finally {
         setLoading(false);
         fetchingRef.current = false;
       }
     },
-    [text, report, sessionId]
+    [text, report, sessionId],
   );
 
   useEffect(() => {
@@ -219,7 +238,10 @@ export function AiRecommendations({ text, report, sessionId }: AiRecommendations
       </div>
 
       {loading && (
-        <div className="flex flex-col items-center justify-center gap-3 py-10 text-center" role="status">
+        <div
+          className="flex flex-col items-center justify-center gap-3 py-10 text-center"
+          role="status"
+        >
           <Loader2 className="size-6 animate-spin text-primary" />
           <p className="text-sm font-medium text-muted-foreground">
             Analyzing offer details and generating tailored advice…
@@ -271,7 +293,9 @@ export function AiRecommendations({ text, report, sessionId }: AiRecommendations
                   ))}
                 </ul>
               ) : (
-                <p className="mt-1.5 text-xs text-muted-foreground italic">Follow official company website & domain verification steps.</p>
+                <p className="mt-1.5 text-xs text-muted-foreground italic">
+                  Follow official company website & domain verification steps.
+                </p>
               )}
             </div>
 
@@ -294,7 +318,9 @@ export function AiRecommendations({ text, report, sessionId }: AiRecommendations
                   ))}
                 </ul>
               ) : (
-                <p className="mt-1.5 text-xs text-muted-foreground italic">Ask for official team hierarchy and contract documentation.</p>
+                <p className="mt-1.5 text-xs text-muted-foreground italic">
+                  Ask for official team hierarchy and contract documentation.
+                </p>
               )}
             </div>
 
@@ -317,13 +343,16 @@ export function AiRecommendations({ text, report, sessionId }: AiRecommendations
                   ))}
                 </ul>
               ) : (
-                <p className="mt-1.5 text-xs text-muted-foreground italic">Never transfer money or share confidential financial credentials.</p>
+                <p className="mt-1.5 text-xs text-muted-foreground italic">
+                  Never transfer money or share confidential financial credentials.
+                </p>
               )}
             </div>
           </div>
 
           <p className="mt-3 text-[10px] text-muted-foreground">
-            Advisory note: AI recommendations are supplemental career guidance and do not modify OfferProof’s verification findings or risk scores.
+            Advisory note: AI recommendations are supplemental career guidance and do not modify
+            OfferProof’s verification findings or risk scores.
           </p>
         </div>
       )}

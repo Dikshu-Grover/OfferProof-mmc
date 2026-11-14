@@ -31,10 +31,23 @@ export function ReportView({
         : { Icon: CheckCircle2, cls: "border-low bg-low-soft", ic: "text-low" };
   const x = report.extracted;
   const salary = parseSalary(x.salary);
-  const salaryPeriods = { year: "annual", month: "monthly", week: "weekly", day: "daily", hour: "hourly" };
-  const salaryDisplay = salary.amount !== null
-    ? [salary.amount.toLocaleString(salary.currency === "INR" ? "en-IN" : "en-US"), salary.currency, salary.period ? salaryPeriods[salary.period] : null].filter(Boolean).join(" · ")
-    : x.salary;
+  const salaryPeriods = {
+    year: "annual",
+    month: "monthly",
+    week: "weekly",
+    day: "daily",
+    hour: "hourly",
+  };
+  const salaryDisplay =
+    salary.amount !== null
+      ? [
+          salary.amount.toLocaleString(salary.currency === "INR" ? "en-IN" : "en-US"),
+          salary.currency,
+          salary.period ? salaryPeriods[salary.period] : null,
+        ]
+          .filter(Boolean)
+          .join(" · ")
+      : x.salary;
   const emailRoles = classifyEmails(text, x.emails);
   const details: [string, string | null][] = [
     ["Company", x.company],
@@ -61,7 +74,8 @@ export function ReportView({
               <h2 className="mt-1 text-2xl sm:text-3xl font-bold">{meta.label}</h2>
               <p className="mt-2 max-w-2xl text-xs sm:text-sm">{meta.summary}</p>
               <p className="mt-2 text-xs text-muted-foreground">
-                {report.findings.length} concern signal(s) found · heuristic result, not a validated probability
+                {report.findings.length} concern signal(s) found · heuristic result, not a validated
+                probability
               </p>
             </div>
           </div>
@@ -79,11 +93,16 @@ export function ReportView({
       {/* 2. Side-by-side: Concern Signals & AI Recommendations */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 items-start">
         {/* Concern Signals */}
-        <section aria-label="Concern Signals" className="rounded-2xl border bg-card p-5 sm:p-6 shadow-card flex flex-col">
+        <section
+          aria-label="Concern Signals"
+          className="rounded-2xl border bg-card p-5 sm:p-6 shadow-card flex flex-col"
+        >
           <div className="flex items-center justify-between pb-3.5 border-b">
             <div>
               <h3 className="text-lg sm:text-xl font-bold">Concern Signals</h3>
-              <p className="text-xs text-muted-foreground">Heuristic indicators detected in the offer.</p>
+              <p className="text-xs text-muted-foreground">
+                Heuristic indicators detected in the offer.
+              </p>
             </div>
             <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
               {report.findings.length} {report.findings.length === 1 ? "signal" : "signals"}
@@ -96,29 +115,41 @@ export function ReportView({
                 <CheckCircle2 className="mx-auto size-8 text-low mb-2" />
                 <p className="font-semibold text-foreground">No common warning signs detected</p>
                 <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                  Absence of warnings is not proof the offer is genuine. Use the AI recommendations and checklist below to verify.
+                  Absence of warnings is not proof the offer is genuine. Use the AI recommendations
+                  and checklist below to verify.
                 </p>
               </div>
             )}
             {report.findings.map((f) => (
-              <article key={f.id} className={`rounded-xl border border-l-4 bg-card p-4 shadow-sm ${SEV[f.severity].bar}`}>
+              <article
+                key={f.id}
+                className={`rounded-xl border border-l-4 bg-card p-4 shadow-sm ${SEV[f.severity].bar}`}
+              >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h4 className="font-semibold text-sm">{f.name}</h4>
-                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${SEV[f.severity].cls}`}>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${SEV[f.severity].cls}`}
+                  >
                     {SEV[f.severity].label}
                   </span>
                 </div>
                 {f.evidence.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {f.evidence.map((e) => (
-                      <code key={e} className="rounded bg-muted px-2 py-0.5 text-[11px] break-all">“{e}”</code>
+                      <code key={e} className="rounded bg-muted px-2 py-0.5 text-[11px] break-all">
+                        “{e}”
+                      </code>
                     ))}
                   </div>
                 )}
-                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{f.explanation}</p>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  {f.explanation}
+                </p>
                 <p className="mt-2 flex gap-1.5 text-xs">
                   <Info className="mt-0.5 size-3.5 shrink-0 text-primary" />
-                  <span><b>What to do:</b> {f.action}</span>
+                  <span>
+                    <b>What to do:</b> {f.action}
+                  </span>
                 </p>
               </article>
             ))}
@@ -130,7 +161,10 @@ export function ReportView({
       </div>
 
       {/* 3. Extracted Details below in a compact two-column grid */}
-      <section aria-label="Extracted Details" className="rounded-2xl border bg-card p-5 sm:p-6 shadow-card print:hidden">
+      <section
+        aria-label="Extracted Details"
+        className="rounded-2xl border bg-card p-5 sm:p-6 shadow-card print:hidden"
+      >
         <div className="border-b pb-3.5">
           <h3 className="text-lg sm:text-xl font-bold">Extracted Details</h3>
           <p className="mt-0.5 text-xs text-muted-foreground">
@@ -140,9 +174,18 @@ export function ReportView({
 
         <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
           {details.map(([k, v]) => (
-            <div key={k} className="flex flex-col border-b border-border/30 pb-2 sm:border-0 sm:pb-0">
+            <div
+              key={k}
+              className="flex flex-col border-b border-border/30 pb-2 sm:border-0 sm:pb-0"
+            >
               <dt className="text-xs font-medium text-muted-foreground">{k}</dt>
-              <dd className={v ? "mt-0.5 font-medium text-foreground break-words text-xs sm:text-sm" : "mt-0.5 italic text-muted-foreground text-xs sm:text-sm"}>
+              <dd
+                className={
+                  v
+                    ? "mt-0.5 font-medium text-foreground break-words text-xs sm:text-sm"
+                    : "mt-0.5 italic text-muted-foreground text-xs sm:text-sm"
+                }
+              >
                 {v ?? "Not found"}
               </dd>
             </div>
@@ -153,7 +196,9 @@ export function ReportView({
               {x.domains.length === 0 ? (
                 <span className="italic text-muted-foreground">None found</span>
               ) : (
-                <span className="font-medium text-foreground break-all">{x.domains.join(", ")}</span>
+                <span className="font-medium text-foreground break-all">
+                  {x.domains.join(", ")}
+                </span>
               )}
             </dd>
           </div>
@@ -198,8 +243,9 @@ export function ReportView({
 
       {/* 6. Disclaimer */}
       <p className="text-xs text-muted-foreground">
-        Disclaimer: OfferProof uses rule-based heuristics to highlight common warning signs. It cannot confirm that an offer is genuine or
-        fraudulent, and the concern score is not a validated measure of fraud likelihood. Always verify directly with the employer.
+        Disclaimer: OfferProof uses rule-based heuristics to highlight common warning signs. It
+        cannot confirm that an offer is genuine or fraudulent, and the concern score is not a
+        validated measure of fraud likelihood. Always verify directly with the employer.
       </p>
     </div>
   );

@@ -19,14 +19,16 @@ function createMockReport(numFindings: number): Report {
   const findings: Finding[] = Array.from({ length: numFindings }, (_, idx) => ({
     id: `finding_${idx + 1}`,
     name: `Warning Signal ${idx + 1}`,
-    severity: (idx % 3 === 0 ? "high" : idx % 3 === 1 ? "medium" : "low") as "high" | "medium" | "low",
+    severity: (idx % 3 === 0 ? "high" : idx % 3 === 1 ? "medium" : "low") as
+      "high" | "medium" | "low",
     evidence: [`evidence_${idx + 1}@example.com`],
     explanation: `Detailed explanation for indicator #${idx + 1}`,
     action: `Actionable step to verify indicator #${idx + 1}`,
   }));
 
   return {
-    assessment: numFindings >= 5 ? "high_concern" : numFindings >= 1 ? "needs_review" : "low_concern",
+    assessment:
+      numFindings >= 5 ? "high_concern" : numFindings >= 1 ? "needs_review" : "low_concern",
     points: numFindings * 3,
     findings,
     extracted: {
@@ -93,7 +95,10 @@ describe("OfferProof Results Page Layout & Warning Signal Scenarios", () => {
 
   it("renders correctly with 1 warning signal", async () => {
     mockInvoke.mockResolvedValue({
-      data: { recommendations: "### Verification Steps\n- Step 1\n### Recruiter Questions\n- Q1\n### Important Precautions\n- P1" },
+      data: {
+        recommendations:
+          "### Verification Steps\n- Step 1\n### Recruiter Questions\n- Q1\n### Important Precautions\n- P1",
+      },
       error: null,
     });
 

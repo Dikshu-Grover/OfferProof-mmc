@@ -9,7 +9,9 @@ vi.mock("@tanstack/react-router", () => ({
 vi.mock("@/hooks/use-session", () => ({ useSession: () => null }));
 vi.mock("@/lib/offers", () => ({ addPending: vi.fn(), saveOfferWithReport: vi.fn() }));
 vi.mock("@/lib/verify/extract-file", () => ({
-  extractFromFile: vi.fn().mockResolvedValue("Company: Acme Corp\nPosition: Dev\nSalary: $100,000 per year"),
+  extractFromFile: vi
+    .fn()
+    .mockResolvedValue("Company: Acme Corp\nPosition: Dev\nSalary: $100,000 per year"),
 }));
 
 import { Route } from "@/routes/verify";

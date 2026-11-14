@@ -59,15 +59,31 @@ function Contact() {
 
   return (
     <>
-      <PageHero eyebrow="Contact" title="Talk to us.">Questions, feedback, or a scam pattern we should know about.</PageHero>
+      <PageHero eyebrow="Contact" title="Talk to us.">
+        Questions, feedback, or a scam pattern we should know about.
+      </PageHero>
       <section className="mx-auto max-w-xl px-4 py-14 sm:px-6">
-        <form onSubmit={submit} noValidate className="space-y-5 rounded-2xl border bg-card p-6 shadow-card">
+        <form
+          onSubmit={submit}
+          noValidate
+          className="space-y-5 rounded-2xl border bg-card p-6 shadow-card"
+        >
           {field("name", "Name", <Input id="name" name="name" maxLength={100} />)}
           {field("email", "Email", <Input id="email" name="email" type="email" maxLength={255} />)}
           {field("subject", "Subject", <Input id="subject" name="subject" maxLength={150} />)}
-          {field("message", "Message", <Textarea id="message" name="message" rows={6} maxLength={2000} />)}
-          <Button type="submit" className="w-full">Send message</Button>
-          {sent && <p className="text-center text-sm text-muted-foreground">If your email app didn't open, write to hello@offerproof.app.</p>}
+          {field(
+            "message",
+            "Message",
+            <Textarea id="message" name="message" rows={6} maxLength={2000} />,
+          )}
+          <Button type="submit" className="w-full">
+            Send message
+          </Button>
+          {sent && (
+            <p className="text-center text-sm text-muted-foreground">
+              If your email app didn't open, write to hello@offerproof.app.
+            </p>
+          )}
         </form>
       </section>
     </>

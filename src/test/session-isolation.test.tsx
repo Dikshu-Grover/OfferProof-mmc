@@ -92,7 +92,8 @@ describe("OfferProof Multi-User Session Isolation", () => {
     it("isolates data completely between two distinct browser sessions (e.g., Firefox vs Chrome)", () => {
       const firefoxSessionId = "session_firefox_abc123";
       const chromeSessionId = "session_chrome_xyz789";
-      const firefoxText = "Firefox User: Offer letter from ABC Corp with suspicious registration fee.";
+      const firefoxText =
+        "Firefox User: Offer letter from ABC Corp with suspicious registration fee.";
       const chromeText = "Chrome User: Legitimate offer letter from Google LLC.";
 
       // Save Firefox session state
@@ -157,11 +158,9 @@ describe("OfferProof Multi-User Session Isolation", () => {
 
       // Check both states
       expect(loadSessionState(firefoxSessionId)?.text).toBe(
-        "Dear Candidate, you must pay Rs 3000 refundable security deposit."
+        "Dear Candidate, you must pay Rs 3000 refundable security deposit.",
       );
-      expect(loadSessionState(chromeSessionId)?.text).toBe(
-        "We are pleased to offer you..."
-      );
+      expect(loadSessionState(chromeSessionId)?.text).toBe("We are pleased to offer you...");
     });
   });
 
@@ -184,7 +183,7 @@ describe("OfferProof Multi-User Session Isolation", () => {
           text="Sample offer text for Firefox user"
           report={report}
           sessionId={firefoxSessionId}
-        />
+        />,
       );
 
       await waitFor(() => {
@@ -192,7 +191,10 @@ describe("OfferProof Multi-User Session Isolation", () => {
       });
 
       const callArgs = mockInvoke.mock.calls[0] as
-        | [string, { body: { sessionId: string; context: { sessionId: string }; offerText: string } }]
+        | [
+            string,
+            { body: { sessionId: string; context: { sessionId: string }; offerText: string } },
+          ]
         | undefined;
       expect(callArgs).toBeDefined();
       if (!callArgs) return;
@@ -227,7 +229,7 @@ describe("OfferProof Multi-User Session Isolation", () => {
           text="Offer text for active session"
           report={report}
           sessionId={currentSessionId}
-        />
+        />,
       );
 
       await waitFor(() => {
