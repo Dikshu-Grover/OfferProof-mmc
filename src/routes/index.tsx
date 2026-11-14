@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, BadgeAlert, BrainCircuit, Database, Eye, FileSearch, GitCompare, ListChecks, Lock, ScrollText, ShieldAlert } from "lucide-react";
+import { ArrowRight, BadgeAlert, BrainCircuit, Database, Eye, FileSearch, GitCompare, ListChecks, ScrollText, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Hero3D } from "@/components/hero/Hero3D";
 import { StepsVisual } from "@/components/site/StepsVisual";
@@ -46,7 +46,6 @@ function Home() {
               <Button asChild size="lg"><Link to="/verify">Verify an Offer <ArrowRight className="size-4" /></Link></Button>
               <Button asChild size="lg" variant="outline"><Link to="/how-it-works">Explore How It Works</Link></Button>
             </div>
-            <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Lock className="size-4" /> Heuristic checks run in your browser. AI recommendations send redacted text to NVIDIA's API.</p>
             <p className="mt-3 text-sm text-muted-foreground">
               Juggling more than one offer?{" "}
               <CompareOffersLink className="font-medium text-primary hover:underline">Log in to compare offers</CompareOffersLink> side by side — salary, benefits,
