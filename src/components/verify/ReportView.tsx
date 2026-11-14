@@ -90,7 +90,7 @@ export function ReportView({
             </span>
           </div>
 
-          <div className="mt-4 max-h-[420px] overflow-y-auto pr-1 space-y-3">
+          <div className="mt-4 max-h-[420px] overflow-y-auto print:max-h-none print:overflow-visible pr-1 space-y-3">
             {report.findings.length === 0 && (
               <div className="rounded-xl border border-dashed bg-muted/20 p-6 text-center text-sm text-muted-foreground">
                 <CheckCircle2 className="mx-auto size-8 text-low mb-2" />

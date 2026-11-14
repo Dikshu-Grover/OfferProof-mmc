@@ -32,7 +32,7 @@ export function Header() {
     navigate({ to: "/login", replace: true });
   }
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur print:hidden">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Logo />
         <nav className="hidden items-center gap-1 lg:flex">
@@ -86,7 +86,7 @@ export function Header() {
 
 export function Footer() {
   return (
-    <footer className="bg-ink text-ink-foreground">
+    <footer className="bg-ink text-ink-foreground print:hidden">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-4">
         <div className="md:col-span-2">
           <div className="[&_a]:text-ink-foreground"><Logo /></div>

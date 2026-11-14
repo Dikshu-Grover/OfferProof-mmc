@@ -171,3 +171,45 @@
 }
 
 #lovable-badge { display: none !important; }
+
+/* ─── Print / PDF styles ─────────────────────────────────────────────────── */
+@media print {
+  /* Hide global chrome */
+  header,
+  footer,
+  nav,
+  [data-radix-scroll-area-viewport],
+  .print\:hidden { display: none !important; }
+
+  /* Reset page margins and background */
+  @page { margin: 1.2cm 1.4cm; }
+  body { background: white !important; color: black !important; font-size: 11pt; }
+
+  /* Remove overflow clipping so scrollable boxes expand fully */
+  [class*="overflow-y-auto"],
+  [class*="overflow-y-scroll"] {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Side-by-side grid → single column in print */
+  #report .grid.lg\:grid-cols-2 {
+    display: block !important;
+  }
+  #report .grid.lg\:grid-cols-2 > * {
+    margin-bottom: 1.2rem;
+    break-inside: avoid;
+  }
+
+  /* Avoid page breaks splitting a finding card */
+  article { break-inside: avoid; page-break-inside: avoid; }
+
+  /* Section spacing */
+  #report > * { margin-bottom: 1rem; }
+
+  /* Action guide — keep together */
+  #report > div.rounded-2xl.bg-ink { break-inside: avoid; }
+
+  /* Remove shadows and decorative borders to save ink */
+  .shadow-card { box-shadow: none !important; }
+}

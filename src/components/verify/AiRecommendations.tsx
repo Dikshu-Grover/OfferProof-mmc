@@ -251,7 +251,7 @@ export function AiRecommendations({ text, report, sessionId }: AiRecommendations
             <p className="mb-2 text-xs text-muted-foreground italic">{sections.summaryIntro}</p>
           )}
 
-          <div className="max-h-[420px] overflow-y-auto pr-1 space-y-3">
+          <div className="max-h-[420px] overflow-y-auto print:max-h-none print:overflow-visible pr-1 space-y-3">
             {/* Section 1: Verification Steps */}
             <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5">
               <div className="flex items-center gap-2 text-primary font-semibold text-xs sm:text-sm">
