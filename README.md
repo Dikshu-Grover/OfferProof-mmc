@@ -422,7 +422,6 @@ Each member's commits, pull requests, and reviews are recorded in the repository
 | [`docs/10-future-scope.md`](./docs/10-future-scope.md) | Trade-offs and enhancement roadmap |
 | [`docs/11-sitemap.md`](./docs/11-sitemap.md) | Route tree, access controls, and SEO specifications |
 | [`docs/roadmap.md`](./docs/roadmap.md) | Phase tracker and milestones |
-| [`docs/OfferProof_Documentation.docx`](./docs/OfferProof_Documentation.docx) | Compiled Word document with all chapters |
 
 ---
 
