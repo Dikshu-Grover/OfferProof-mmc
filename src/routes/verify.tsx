@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, Columns3, Save, ScanSearch, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,12 @@ import { ReportView } from "@/components/verify/ReportView";
 import { useSession } from "@/hooks/use-session";
 import { addPending, saveOfferWithReport } from "@/lib/offers";
 import { cn } from "@/lib/utils";
+import {
+  clearSessionState,
+  getOrCreateSessionId,
+  loadSessionState,
+  saveSessionState,
+} from "@/lib/verify/session";
 
 export const Route = createFileRoute("/verify")({
   head: () => ({
@@ -29,12 +35,27 @@ export const Route = createFileRoute("/verify")({
 function VerificationFlow() {
   const router = useRouter();
   const [attempt, setAttempt] = useState(0);
+  const [sessionId] = useState(() => getOrCreateSessionId());
+
   // Same-route links retain React state by default. A completed navigation to
-  // /verify starts a new attempt, including upload and checklist child state.
+  // /verify starts a new attempt for this browser session only.
   useEffect(() => router.subscribe("onResolved", ({ toLocation }) => {
-    if (toLocation.pathname === "/verify") setAttempt((value) => value + 1);
-  }), [router]);
-  return <VerifyPage key={attempt} />;
+    if (toLocation.pathname === "/verify") {
+      clearSessionState(sessionId);
+      setAttempt((value) => value + 1);
+    }
+  }), [router, sessionId]);
+
+  return (
+    <VerifyPage
+      key={`${sessionId}-${attempt}`}
+      sessionId={sessionId}
+      onResetSession={() => {
+        clearSessionState(sessionId);
+        setAttempt((v) => v + 1);
+      }}
+    />
+  );
 }
 
 const SAMPLE = `Dear Candidate,
@@ -52,19 +73,38 @@ Rahul Verma
 HR Manager
 hr.globaltech.jobs@gmail.com`;
 
-function VerifyPage() {
-  const [text, setText] = useState("");
+function VerifyPage({
+  sessionId,
+  onResetSession,
+}: {
+  sessionId: string;
+  onResetSession: () => void;
+}) {
+  const savedState = useMemo(() => loadSessionState(sessionId), [sessionId]);
+  const [text, setText] = useState(() => savedState?.text ?? "");
   const [busy, setBusy] = useState(false);
   const [pendingFiles, setPendingFiles] = useState(false);
-  const [report, setReport] = useState<Report | null>(null);
-  const [isSample, setIsSample] = useState(false);
+  const [report, setReport] = useState<Report | null>(() => savedState?.report ?? null);
+  const [isSample, setIsSample] = useState(() => savedState?.isSample ?? false);
   const session = useSession();
   const navigate = useNavigate();
-  const [savedFor, setSavedFor] = useState<string | null>(null);
+  const [savedFor, setSavedFor] = useState<string | null>(() => savedState?.savedFor ?? null);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<"paste" | "file">("paste");
-  const [uploaded, setUploaded] = useState(false);
-  const [showExtracted, setShowExtracted] = useState(false);
+  const [activeTab, setActiveTab] = useState<"paste" | "file">(() => savedState?.activeTab ?? "paste");
+  const [uploaded, setUploaded] = useState(() => savedState?.uploaded ?? false);
+  const [showExtracted, setShowExtracted] = useState(() => savedState?.showExtracted ?? false);
+
+  useEffect(() => {
+    saveSessionState(sessionId, {
+      text,
+      report,
+      activeTab,
+      uploaded,
+      showExtracted,
+      isSample,
+      savedFor,
+    });
+  }, [sessionId, text, report, activeTab, uploaded, showExtracted, isSample, savedFor]);
 
   async function saveCurrent() {
     if (!report || savedFor === text) return true;
@@ -88,8 +128,21 @@ function VerifyPage() {
   }
 
   function addAndCheckAnother() {
-    if (session) void saveCurrent().then((ok) => ok && (setReport(null), setText("")));
-    else { const n = addPending(text); toast.success(`Kept for comparison (${n}). Sign in when you're ready to compare.`); setReport(null); setText(""); }
+    if (session) {
+      void saveCurrent().then((ok) => {
+        if (ok) {
+          clearSessionState(sessionId);
+          setReport(null);
+          setText("");
+        }
+      });
+    } else {
+      const n = addPending(text);
+      toast.success(`Kept for comparison (${n}). Sign in when you're ready to compare.`);
+      clearSessionState(sessionId);
+      setReport(null);
+      setText("");
+    }
   }
 
   function run() {
@@ -116,7 +169,20 @@ function VerifyPage() {
             <Columns3 className="size-4" /> Compare Offers
           </Button>
         </div>
-        <ReportView report={report} text={text} onReset={() => { setReport(null); setPendingFiles(false); }} />
+        <ReportView
+          report={report}
+          text={text}
+          sessionId={sessionId}
+          onReset={() => {
+            clearSessionState(sessionId);
+            setReport(null);
+            setText("");
+            setPendingFiles(false);
+            setUploaded(false);
+            setIsSample(false);
+            onResetSession();
+          }}
+        />
       </div>
     );
 
