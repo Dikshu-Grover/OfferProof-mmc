@@ -47,7 +47,7 @@ export const FAQS = [
   { q: "Is the risk category a fraud probability?", a: "No. It is a simple rule-based heuristic that weighs the warning signs we found. It has not been scientifically validated as a probability of fraud." },
   { q: "Can I compare multiple job offers?", a: "Yes! Log in to OfferProof to compare offers, review key differences, and make a more informed decision." },
   { q: "What file types can I check?", a: "You can paste text, upload a PDF, or upload a JPG or PNG screenshot. Text is extracted in your browser, and you can review and edit it before analysis." },
-  { q: "Are my documents uploaded to a server?", a: "Text extraction and analysis run in your browser. Files are not uploaded unless you choose to save a report to your account." },
+  { q: "Are my documents uploaded to a server?", a: "Text extraction (PDF.js, OCR) and heuristic analysis run in your browser — the offer file is never uploaded. If you request AI recommendations, offer text with emails and phone numbers redacted is sent to NVIDIA's inference API. Saving a report stores it to your account on Supabase." },
   { q: "Should I ever pay a fee to get a job?", a: "Legitimate employers almost never ask candidates to pay for registration, training, equipment or background checks. Treat any such request as a serious warning sign." },
   { q: "What should I do if I think I've been scammed?", a: "Stop all communication and payments, keep screenshots, contact your bank immediately if you paid, and report to your national cybercrime portal (in India, cybercrime.gov.in or helpline 1930)." },
   { q: "Is OfferProof free?", a: "Yes. Core verification works without any paid service." },

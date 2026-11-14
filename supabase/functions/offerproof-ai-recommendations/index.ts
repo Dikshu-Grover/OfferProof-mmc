@@ -79,8 +79,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     );
   }
 
-  const offerText = typeof payload.offerText === "string" ? payload.offerText.trim() : "";
-  if (!offerText) {
+  const rawOfferText = typeof payload.offerText === "string" ? payload.offerText.trim() : "";
+  if (!rawOfferText) {
     return new Response(
       JSON.stringify({ error: "Missing required field: 'offerText' must be a non-empty string." }),
       {
@@ -89,6 +89,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
       }
     );
   }
+
+  // Redact personally-identifiable details before sending to NVIDIA API.
+  // The AI only needs the offer's structure and language to give advice —
+  // not the applicant's personal contact information.
+  const offerText = rawOfferText
+    .replace(/\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b/g, "[EMAIL REDACTED]")
+    .replace(/(?:\+91[\s\-]?)?(?:\(?0?\d{2,4}\)?[\s\-]?)?\d{5}[\s\-]?\d{5}/g, "[PHONE REDACTED]")
+    .replace(/\b\d{10,12}\b/g, "[PHONE REDACTED]");
 
   // Extract optional verification context (supports either payload.context or top-level properties)
   const sessionId =

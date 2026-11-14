@@ -191,7 +191,7 @@ function VerifyPage({
       <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
         <p className="eyebrow">Verify an offer</p>
         <h1 className="mt-3 text-4xl font-bold">What did they send you?</h1>
-        <p className="mt-3 text-muted-foreground">Text is read and checked in your browser. Nothing is uploaded.</p>
+        <p className="mt-3 text-muted-foreground">Heuristic checks run entirely in your browser. If you request AI recommendations, redacted offer text is sent to NVIDIA's API.</p>
 
         <div className="mt-8 rounded-2xl border bg-card p-6 shadow-card">
           <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as "paste" | "file")}>

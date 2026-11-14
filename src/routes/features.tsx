@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BadgeAlert, Clock, Eye, FileSearch, FileText, GitCompare, KeyRound, ListChecks, MailWarning, ScrollText, TrendingUp } from "lucide-react";
+import { BadgeAlert, BrainCircuit, Clock, Database, Eye, FileSearch, FileText, GitCompare, KeyRound, ListChecks, MailWarning, ScrollText, TrendingUp } from "lucide-react";
 import { PageHero } from "@/components/site/SiteShell";
 import { CompareOffersLink } from "@/components/site/CompareOffersLink";
 import { Button } from "@/components/ui/button";
@@ -61,6 +61,28 @@ function Features() {
               )}
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Technology integrations */}
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+        <p className="eyebrow">Technology</p>
+        <h2 className="mt-3 text-3xl font-bold sm:text-4xl">Powered by industry-leading platforms.</h2>
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          <div className="rounded-xl border bg-card p-6 shadow-card">
+            <BrainCircuit className="size-6 text-primary" />
+            <h3 className="mt-4 text-lg font-semibold">AI recommendations — NVIDIA Nemotron</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              When you request AI recommendations, redacted offer text (emails and phone numbers stripped) is sent to NVIDIA's inference API running the <code className="rounded bg-muted px-1 py-0.5 text-xs">nvidia/nemotron-3.5-bolt-e4b</code> model. It returns structured verification steps, recruiter questions, and precautions — without altering the heuristic assessment.
+            </p>
+          </div>
+          <div className="rounded-xl border bg-card p-6 shadow-card">
+            <Database className="size-6 text-primary" />
+            <h3 className="mt-4 text-lg font-semibold">Threat analytics — Google Cloud BigQuery</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              The Scam Awareness Centre queries a Google Cloud BigQuery dataset of job-posting patterns to surface relevant context. No offer text or personal data is ever written to BigQuery — it is a read-only analytics query.
+            </p>
+          </div>
         </div>
       </section>
       <div className="py-16 text-center"><Button asChild size="lg"><Link to="/verify">Try it on an offer</Link></Button></div>

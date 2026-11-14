@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, BadgeAlert, Eye, FileSearch, GitCompare, ListChecks, Lock, ScrollText, ShieldAlert } from "lucide-react";
+import { ArrowRight, BadgeAlert, BrainCircuit, Database, Eye, FileSearch, GitCompare, ListChecks, Lock, ScrollText, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Hero3D } from "@/components/hero/Hero3D";
 import { StepsVisual } from "@/components/site/StepsVisual";
@@ -23,6 +23,8 @@ const FEATURES = [
   { icon: BadgeAlert, title: "Fee & payment detection", text: "Spots registration, security, training and 'refundable' deposit requests." },
   { icon: FileSearch, title: "Domain & link checks", text: "Flags personal emails, look-alike domains, shortened and unencrypted links." },
   { icon: Eye, title: "Highlighted evidence", text: "Every suspicious phrase is marked in your document so you can see why." },
+  { icon: BrainCircuit, title: "AI recommendations (NVIDIA)", text: "Powered by NVIDIA Nemotron via their inference API — generates verification steps, recruiter questions and precautions tailored to your offer." },
+  { icon: Database, title: "Threat analytics (Google BigQuery)", text: "Job-posting pattern data is queried from a Google Cloud BigQuery dataset to surface scam-awareness context." },
   { icon: GitCompare, title: "Compare Job Offers", text: "Log in to line up two or more offers side by side: salary, benefits, credibility and warning signs." },
   { icon: ListChecks, title: "Before-you-accept checklist", text: "A guided list of what to verify yourself before saying yes." },
   { icon: ScrollText, title: "Downloadable reports", text: "Save a clear report with findings, recommendations and a disclaimer." },
@@ -44,7 +46,7 @@ function Home() {
               <Button asChild size="lg"><Link to="/verify">Verify an Offer <ArrowRight className="size-4" /></Link></Button>
               <Button asChild size="lg" variant="outline"><Link to="/how-it-works">Explore How It Works</Link></Button>
             </div>
-            <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Lock className="size-4" /> Analysis runs in your browser. Nothing is uploaded unless you save it.</p>
+            <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Lock className="size-4" /> Heuristic checks run in your browser. AI recommendations send redacted text to NVIDIA's API.</p>
             <p className="mt-3 text-sm text-muted-foreground">
               Juggling more than one offer?{" "}
               <CompareOffersLink className="font-medium text-primary hover:underline">Log in to compare offers</CompareOffersLink> side by side — salary, benefits,
@@ -120,7 +122,7 @@ function Home() {
             {[
               { t: "Evidence first", d: "Every warning links to the words that caused it." },
               { t: "No false certainty", d: "We never claim an offer is guaranteed real or fake." },
-              { t: "Private by default", d: "Documents are processed locally in your browser." },
+              { t: "Privacy by design", d: "Heuristic checks run in your browser. AI recommendations transmit only redacted text — emails and phone numbers are stripped before sending." },
             ].map((p) => (
               <div key={p.t} className="border-l-2 border-primary pl-4">
                 <h3 className="font-semibold">{p.t}</h3>

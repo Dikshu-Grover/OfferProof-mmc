@@ -3,7 +3,7 @@ import { FileUp, ScanText, ShieldCheck, ClipboardCheck } from "lucide-react";
 
 export const STEPS = [
   { icon: FileUp, title: "Upload", text: "Paste the offer text, or drop in a PDF or screenshot." },
-  { icon: ScanText, title: "Extract", text: "Text is read in your browser. You review and correct it." },
+  { icon: ScanText, title: "Extract", text: "Text is read in your browser using PDF.js or on-device OCR. You review and correct it." },
   { icon: ShieldCheck, title: "Verify", text: "Explainable checks look for fees, pressure, domains and more." },
   { icon: ClipboardCheck, title: "Review", text: "See each warning with evidence, severity and what to do next." },
 ];

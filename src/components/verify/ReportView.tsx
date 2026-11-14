@@ -61,7 +61,7 @@ export function ReportView({
               <h2 className="mt-1 text-2xl sm:text-3xl font-bold">{meta.label}</h2>
               <p className="mt-2 max-w-2xl text-xs sm:text-sm">{meta.summary}</p>
               <p className="mt-2 text-xs text-muted-foreground">
-                {report.findings.length} warning sign(s) found · heuristic result, not a fraud probability
+                {report.findings.length} concern signal(s) found · heuristic result, not a validated probability
               </p>
             </div>
           </div>
@@ -130,7 +130,7 @@ export function ReportView({
       </div>
 
       {/* 3. Extracted Details below in a compact two-column grid */}
-      <section aria-label="Extracted Details" className="rounded-2xl border bg-card p-5 sm:p-6 shadow-card">
+      <section aria-label="Extracted Details" className="rounded-2xl border bg-card p-5 sm:p-6 shadow-card print:hidden">
         <div className="border-b pb-3.5">
           <h3 className="text-lg sm:text-xl font-bold">Extracted Details</h3>
           <p className="mt-0.5 text-xs text-muted-foreground">
@@ -192,12 +192,14 @@ export function ReportView({
       </div>
 
       {/* 5. Checklist */}
-      <Checklist />
+      <div className="print:hidden">
+        <Checklist />
+      </div>
 
       {/* 6. Disclaimer */}
       <p className="text-xs text-muted-foreground">
         Disclaimer: OfferProof uses rule-based heuristics to highlight common warning signs. It cannot confirm that an offer is genuine or
-        fraudulent, and the assessment is not a validated fraud probability. Always verify directly with the employer.
+        fraudulent, and the concern score is not a validated measure of fraud likelihood. Always verify directly with the employer.
       </p>
     </div>
   );
