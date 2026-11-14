@@ -26,12 +26,11 @@ An explainable, privacy-first platform that helps students and job seekers verif
 
 | Deliverable | Link |
 |---|---|
-| Live demo / working product | `<ADD LINK>` |
+| Live demo / working product | `[<ADD LINK>](https://offerproof-mmc.lovable.app/)` |
 | Presentation deck (up to 8 slides) | `<ADD LINK>` |
 | Recorded walkthrough (up to 5 minutes) | `<ADD LINK>` |
 | Written summary (up to 3 pages) | `<ADD LINK>` |
 | Team Findings (Google Drive) | `<ADD LINK>` |
-| Technical report (Word) | `<ADD LINK>` |
 
 ---
 
