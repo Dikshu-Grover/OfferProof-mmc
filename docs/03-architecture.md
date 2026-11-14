@@ -53,21 +53,6 @@ sequenceDiagram
 
 ---
 
-## Multi-User Session Isolation
-
-Each browser window/tab gets a unique session ID generated with `crypto.randomUUID()` (or a timestamp fallback) stored in `sessionStorage`.
-
-```
-sessionStorage["offerproof:session:id"]     → "abc-uuid-..."
-sessionStorage["offerproof:session:state:abc-uuid-..."] → { text, report, ... }
-```
-
-Because `sessionStorage` is strictly scoped to one browser tab, no two sessions can read or overwrite each other's state — including across different browsers (Firefox vs Chrome).
-
-The session ID also travels in the `offerproof-ai-recommendations` request body so the Edge Function echoes it back; the client validates `data.sessionId === effectiveSessionId` before applying any response, preventing cross-session race conditions.
-
----
-
 ## Security Boundary Summary
 
 | Layer | Mechanism |
