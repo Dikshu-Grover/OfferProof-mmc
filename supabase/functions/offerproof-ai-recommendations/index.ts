@@ -18,8 +18,10 @@ interface VerificationFinding {
 }
 
 interface RequestPayload {
+  sessionId?: string;
   offerText?: unknown;
   context?: {
+    sessionId?: string;
     assessment?: string;
     findings?: VerificationFinding[];
     company?: string | null;
@@ -89,6 +91,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   // Extract optional verification context (supports either payload.context or top-level properties)
+  const sessionId =
+    (typeof payload.sessionId === "string" ? payload.sessionId : undefined) ||
+    (typeof payload.context?.sessionId === "string" ? payload.context.sessionId : undefined);
   const assessment = payload.context?.assessment || payload.assessment;
   const findings = payload.context?.findings || payload.findings;
   const company = payload.context?.company || payload.company;
@@ -116,7 +121,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
     "1. Never alter or override OfferProof's rule-based findings or risk assessment.\n" +
     "2. Recommend concrete questions the candidate should ask the recruiter or hiring contact.\n" +
     "3. Highlight specific clauses, onboarding procedures, or verification steps to double-check.\n" +
-    "4. Structure your response into concise bullet points under 2-3 clear headings (e.g., 'Verification Steps', 'Questions for the Recruiter', 'Important Precautions').\n" +
+    "4. Structure your response into concise bullet points under exactly these three headings:\n" +
+    "### Verification Steps\n" +
+    "### Recruiter Questions\n" +
+    "### Important Precautions\n" +
     "5. Keep the tone calm, empowering, and pragmatic.";
 
   const userPrompt =
@@ -184,6 +192,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       JSON.stringify({
         recommendations,
         model: MODEL_NAME,
+        sessionId,
       }),
       {
         status: 200,

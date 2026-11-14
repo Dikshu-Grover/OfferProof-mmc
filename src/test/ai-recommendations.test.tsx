@@ -58,8 +58,10 @@ describe("AiRecommendations component", () => {
     expect(mockInvoke).toHaveBeenCalledTimes(1);
     expect(mockInvoke).toHaveBeenCalledWith("offerproof-ai-recommendations", {
       body: {
+        sessionId: expect.any(String),
         offerText: "Offer letter text content",
         context: {
+          sessionId: expect.any(String),
           assessment: "needs_review",
           findings: sampleReport.findings,
           company: "Acme Corp",
