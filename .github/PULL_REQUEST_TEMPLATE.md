@@ -4,10 +4,10 @@ Please include a summary of the change, motivation, and which issue or feature i
 Fixes # (issue)
 
 ## Type of Change
-- [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
-- [ ] ✨ New feature / rule (non-breaking change which adds functionality)
-- [ ] 📝 Documentation update
-- [ ] ⚡ Performance optimization / refactor
+- [ ]  Bug fix (non-breaking change which fixes an issue)
+- [ ]  New feature / rule (non-breaking change which adds functionality)
+- [ ]  Documentation update
+- [ ]  Performance optimization / refactor
 
 ## Verification & Testing
 Please describe the tests you ran to verify your changes:
