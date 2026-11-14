@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, BadgeAlert, BrainCircuit, Database, Eye, FileSearch, GitCompare, ListChecks, ScrollText, ShieldAlert } from "lucide-react";
+import { ArrowRight, BadgeAlert, BrainCircuit, Database, Eye, FileSearch, GitCompare, ListChecks, ScrollText, ShieldAlert, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Hero3D } from "@/components/hero/Hero3D";
 import { StepsVisual } from "@/components/site/StepsVisual";
@@ -28,6 +28,7 @@ const FEATURES = [
   { icon: GitCompare, title: "Compare Job Offers", text: "Log in to line up two or more offers side by side: salary, benefits, credibility and warning signs." },
   { icon: ListChecks, title: "Before-you-accept checklist", text: "A guided list of what to verify yourself before saying yes." },
   { icon: ScrollText, title: "Downloadable reports", text: "Save a clear report with findings, recommendations and a disclaimer." },
+  { icon: ShieldCheck, title: "Scam Awareness Centre", text: "Browse real scam patterns, red-flag categories and job-posting threat data sourced from Google BigQuery." },
 ];
 
 function Home() {
