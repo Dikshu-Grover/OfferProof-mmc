@@ -145,54 +145,85 @@ OfferProof scans employment offers, appointment letters, and communication scree
 
 ## 7. System Architecture
 
+# System Architecture
+
+
+## Component Map
+
 ```mermaid
 flowchart TD
-    subgraph Client["Browser (Client-Side SPA)"]
-        UI["React 19 + TanStack Router UI"]
-        ENGINE["Heuristic Engine (Pure TS)\nsrc/lib/verify/engine.ts"]
-        WORKERS["Web Workers\nPDF.js (PDF) / Tesseract.js (OCR)"]
-        SESSION["sessionStorage\n(Session Isolation)"]
-    end
+    ROOT["__root.tsx\n(SiteShell, ThemeToggle, navigation)"]
 
-    subgraph Backend["Supabase Platform"]
-        AUTH["Supabase Auth (Magic Links / OAuth)"]
-        DB[("PostgreSQL Database\n(Row Level Security)")]
-        FN_AI["Edge Function: offerproof-ai-recommendations\n(Deno)"]
-        FN_BQ["Edge Function: offerproof-job-postings\n(Deno)"]
-    end
+    ROOT --> INDEX["/ — index.tsx\n(Hero3D, feature cards, FAQ)"]
+    ROOT --> VERIFY["/verify — verify.tsx\n(VerificationFlow → VerifyPage)"]
+    ROOT --> AWARE["/scam-awareness — scam-awareness.tsx\n(Learn tab, Explore Data tab)"]
+    ROOT --> AUTH_ROUTE["/_authenticated/route.tsx\n(auth guard redirect)"]
 
-    subgraph External["External Cloud Services"]
-        NVIDIA["NVIDIA Inference API\nnvidia/nemotron-3.5-bolt-e4b"]
-        GOOGLE["Google Cloud\nBigQuery & OAuth2"]
-    end
+    AUTH_ROUTE --> HISTORY["history.tsx\n(offers, reports, comparisons)"]
+    AUTH_ROUTE --> COMPARE["compare.tsx\n(side-by-side comparison)"]
+    AUTH_ROUTE --> REPORT_VIEW["reports.$id.tsx\n(view saved report)"]
 
-    UI -->|Local Text| ENGINE
-    UI -->|Uploaded Document| WORKERS
-    WORKERS -->|Extracted Text| UI
-    ENGINE -->|Findings & Score| UI
-    UI <-->|Session State| SESSION
-
-    UI -->|Auth & Session| AUTH
-    UI -->|Save Report / History| DB
-    DB -.->|RLS Enforces auth.uid()| AUTH
-
-    UI -->|Invoke Async| FN_AI
-    FN_AI -->|Chat Completion| NVIDIA
-    NVIDIA -->|Structured Guidance| FN_AI
-
-    UI -->|Query Job Postings| FN_BQ
-    FN_BQ -->|Service Account RS256 JWT| GOOGLE
+    VERIFY --> UPLOAD["UploadEvidence.tsx\n(PDF.js / Tesseract)"]
+    VERIFY --> REPORT_VIEW2["ReportView.tsx\n(findings, extracted, checklist)"]
+    REPORT_VIEW2 --> AI_REC["AiRecommendations.tsx\n(NVIDIA Edge Function)"]
 ```
 
-**Data-flow boundaries**
+---
 
-| Stage | Where it runs | Data leaving the browser |
-|---|---|---|
-| Document and OCR extraction | Browser Web Workers | None |
-| Heuristic verification | Browser (pure TypeScript) | None |
-| AI advisory guidance | Supabase Edge Function to NVIDIA | Text sent for guidance (see [Section 16](#16-privacy-security-and-responsible-use)) |
-| Threat analytics | Supabase Edge Function to BigQuery | Filter queries only |
-| Saved reports and comparisons | Supabase PostgreSQL with Row Level Security | Only for signed-in users who save |
+## Data Flow: Offer Verification
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Browser as React App (Browser)
+    participant Engine as Verification Engine
+    participant Supabase as Supabase DB
+    participant NVIDIA as NVIDIA API (Edge Fn)
+
+    User->>Browser: Paste text or upload file
+    Browser->>Engine: analyze(text) — pure TypeScript
+    Engine-->>Browser: Report {assessment, findings, extracted, phrases}
+    Browser->>Browser: Save to sessionStorage (session-scoped)
+    Browser-->>User: Display Concern Signals, Extracted Details
+
+    Browser->>NVIDIA: functions.invoke("offerproof-ai-recommendations")\n{sessionId, offerText, context}
+    NVIDIA-->>Browser: {recommendations, sessionId}
+    Browser-->>User: Display AI Recommendations (async)
+
+    opt User is signed in
+        User->>Browser: Click "Save report"
+        Browser->>Supabase: INSERT into offers + verification_reports\n(Row Level Security enforces user_id)
+        Supabase-->>Browser: Saved offer.id
+        Browser-->>User: "Saved to your history"
+    end
+```
+
+---
+
+## Multi-User Session Isolation
+
+Each browser window/tab gets a unique session ID generated with `crypto.randomUUID()` (or a timestamp fallback) stored in `sessionStorage`.
+
+```
+sessionStorage["offerproof:session:id"]     → "abc-uuid-..."
+sessionStorage["offerproof:session:state:abc-uuid-..."] → { text, report, ... }
+```
+
+Because `sessionStorage` is strictly scoped to one browser tab, no two sessions can read or overwrite each other's state — including across different browsers (Firefox vs Chrome).
+
+The session ID also travels in the `offerproof-ai-recommendations` request body so the Edge Function echoes it back; the client validates `data.sessionId === effectiveSessionId` before applying any response, preventing cross-session race conditions.
+
+---
+
+## Security Boundary Summary
+
+| Layer | Mechanism |
+|---|---|
+| **Browser ↔ Supabase DB** | Publishable key + JWT Bearer token; Row Level Security on every table |
+| **Browser ↔ Edge Functions** | Supabase `functions.invoke()` (auto-attaches user JWT) |
+| **Edge Function ↔ NVIDIA** | `NVIDIA_API_KEY` Supabase secret — never exposed to client |
+| **Edge Function ↔ BigQuery** | `GOOGLE_SERVICE_ACCOUNT_JSON` Supabase secret; short-lived OAuth2 access token minted at request time |
+| **SSR server auth** | `requireSupabaseAuth` middleware validates JWT before any server function runs |
 
 ---
 
