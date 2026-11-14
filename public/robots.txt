@@ -1,8 +1,14 @@
 User-agent: Googlebot
 Allow: /
+Disallow: /history
+Disallow: /compare
+Disallow: /reports/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /history
+Disallow: /compare
+Disallow: /reports/
 
 User-agent: Twitterbot
 Allow: /
@@ -12,3 +18,8 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /history
+Disallow: /compare
+Disallow: /reports/
+
+Sitemap: https://offerproof.lovable.app/sitemap.xml
