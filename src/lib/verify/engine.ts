@@ -56,20 +56,105 @@ function firstGroup(text: string, re: RegExp): string | null {
   return !value || /^(?:not (?:found|provided|stated|specified|available)|n\/?a|unknown|tbd|to be (?:confirmed|discussed)|[-–—]+)$/i.test(value) ? null : value;
 }
 
-/** Attribute only explicitly labelled addresses; an unlabelled address is not a sender. */
+const RECRUITER_PATTERN = /\b(?:recruiter(?:'s)?|recruitment(?:\s+team)?|talent\s+acquisition|hr\s+representative|hr\s+rep|hr\s+manager|hr\s+team|hr\s+department|human\s+resources|hr|hiring\s+contact|hiring\s+manager|hiring\s+team|contact\s+person|contact(?:\s+us)?|from|sender|sent\s+by)\b/i;
+const APPLICANT_PATTERN = /\b(?:applicant(?:'s)?|candidate(?:'s)?|recipient(?:'s)?)\b|\b(?:sent\s+)?to(?:\s*[:\-]|(?=\s+[A-Z0-9._%+-]+@))/i;
+
+/** Attribute explicitly labelled addresses using surrounding context; ambiguous addresses remain unknown. */
 export function classifyEmails(text: string, emails: string[]) {
   const roles = new Map<string, Set<"applicant" | "recruiter">>();
-  for (const line of text.split(/\n/)) {
-    const labels = [...line.matchAll(/\b(applicant|candidate|recipient|to|from|sender|recruiter|hr|hiring manager|contact)(?:\s+(?:email|e-mail|address))?(?:\s*[:\-]|(?=\s+[A-Z0-9._%+-]+@))/gi)];
-    for (const match of line.matchAll(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi)) {
-      const label = labels.filter((l) => (l.index ?? 0) < (match.index ?? 0)).at(-1)?.[1]?.toLowerCase();
-      if (!label) continue;
-      const email = match[0].toLowerCase();
+  const emailRegex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+  const matches = [...text.matchAll(emailRegex)];
+
+  for (const match of matches) {
+    if (match.index === undefined) continue;
+    const email = match[0].toLowerCase();
+    const start = match.index;
+    const end = start + match[0].length;
+
+    const lineStart = text.lastIndexOf("\n", start) + 1;
+    const nextNewline = text.indexOf("\n", end);
+    const lineEnd = nextNewline === -1 ? text.length : nextNewline;
+
+    const sameLineBefore = text.slice(lineStart, start);
+    const sameLineAfter = text.slice(end, lineEnd);
+
+    const prevEmailOnLine = [...sameLineBefore.matchAll(emailRegex)].at(-1);
+    const effectiveBefore = prevEmailOnLine && prevEmailOnLine.index !== undefined
+      ? sameLineBefore.slice(prevEmailOnLine.index + prevEmailOnLine[0].length)
+      : sameLineBefore;
+
+    const precedingLines: string[] = [];
+    const linesBefore = text.slice(0, lineStart).split(/\r?\n/);
+    for (let i = linesBefore.length - 2; i >= 0 && precedingLines.length < 3; i--) {
+      const l = linesBefore[i] ?? "";
+      if (l.trim() === "") break;
+      if (/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(l)) break;
+      precedingLines.unshift(l);
+    }
+
+    const beforeContext = [...precedingLines, effectiveBefore].join("\n");
+
+    type LabelMatch = { role: "applicant" | "recruiter"; end: number };
+    const beforeLabels: LabelMatch[] = [];
+
+    for (const m of beforeContext.matchAll(new RegExp(RECRUITER_PATTERN.source, "gi"))) {
+      if (m.index !== undefined) {
+        beforeLabels.push({ role: "recruiter", end: m.index + m[0].length });
+      }
+    }
+    for (const m of beforeContext.matchAll(new RegExp(APPLICANT_PATTERN.source, "gi"))) {
+      if (m.index !== undefined) {
+        beforeLabels.push({ role: "applicant", end: m.index + m[0].length });
+      }
+    }
+
+    let detectedRole: "applicant" | "recruiter" | null = null;
+
+    if (beforeLabels.length > 0) {
+      beforeLabels.sort((a, b) => a.end - b.end);
+      detectedRole = beforeLabels.at(-1)?.role ?? null;
+    } else {
+      const nextEmailOnLine = sameLineAfter.match(emailRegex);
+      const effectiveAfter = nextEmailOnLine && nextEmailOnLine.index !== undefined
+        ? sameLineAfter.slice(0, nextEmailOnLine.index)
+        : sameLineAfter;
+
+      const followingLines: string[] = [];
+      const linesAfter = text.slice(lineEnd).split(/\r?\n/);
+      for (let i = 1; i < linesAfter.length && followingLines.length < 2; i++) {
+        const l = linesAfter[i] ?? "";
+        if (l.trim() === "") break;
+        if (/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(l)) break;
+        followingLines.push(l);
+      }
+
+      const afterContext = [effectiveAfter, ...followingLines].join("\n");
+      const afterLabels: { role: "applicant" | "recruiter"; index: number }[] = [];
+
+      for (const m of afterContext.matchAll(new RegExp(RECRUITER_PATTERN.source, "gi"))) {
+        if (m.index !== undefined) {
+          afterLabels.push({ role: "recruiter", index: m.index });
+        }
+      }
+      for (const m of afterContext.matchAll(new RegExp(APPLICANT_PATTERN.source, "gi"))) {
+        if (m.index !== undefined) {
+          afterLabels.push({ role: "applicant", index: m.index });
+        }
+      }
+
+      if (afterLabels.length > 0) {
+        afterLabels.sort((a, b) => a.index - b.index);
+        detectedRole = afterLabels[0]?.role ?? null;
+      }
+    }
+
+    if (detectedRole) {
       const set = roles.get(email) ?? new Set<"applicant" | "recruiter">();
-      set.add(["applicant", "candidate", "recipient", "to"].includes(label) ? "applicant" : "recruiter");
+      set.add(detectedRole);
       roles.set(email, set);
     }
   }
+
   const applicantEmails = emails.filter((e) => roles.get(e)?.size === 1 && roles.get(e)?.has("applicant"));
   const recruiterEmails = emails.filter((e) => roles.get(e)?.size === 1 && roles.get(e)?.has("recruiter"));
   const unknownEmails = emails.filter((e) => !applicantEmails.includes(e) && !recruiterEmails.includes(e));

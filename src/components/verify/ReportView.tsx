@@ -3,6 +3,7 @@ import { Fragment, useMemo } from "react";
 import { ASSESSMENT_META, classifyEmails, type Report, type Severity } from "@/lib/verify/engine";
 import { Button } from "@/components/ui/button";
 import { Checklist } from "./Checklist";
+import { AiRecommendations } from "./AiRecommendations";
 import { parseSalary } from "@/lib/compare/engine";
 
 const SEV: Record<Severity, { label: string; cls: string; bar: string }> = {
@@ -148,6 +149,8 @@ export function ReportView({ report, text, onReset }: { report: Report; text: st
           ))}
         </ol>
       </div>
+
+      <AiRecommendations text={text} report={report} />
 
       <Checklist />
 

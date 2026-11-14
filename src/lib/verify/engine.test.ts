@@ -76,6 +76,20 @@ describe("offer engine", () => {
     expect(report.findings.map((f) => f.id)).not.toContain("personal_email");
   });
 
+  it("classifies emails identified as belonging to recruiter, HR representative, or hiring contact using surrounding context", () => {
+    const report1 = analyze("HR representative: hr@acmetech.com\nHiring contact: hiring@acmetech.com\nRecruiter: recruiter@acmetech.com");
+    expect(report1.extracted.recruiterEmails).toEqual(["hr@acmetech.com", "hiring@acmetech.com", "recruiter@acmetech.com"]);
+    expect(report1.extracted.unknownEmails).toEqual([]);
+
+    const report2 = analyze("Regards,\nRahul Verma\nHR Manager\nhr.globaltech.jobs@gmail.com");
+    expect(report2.extracted.recruiterEmails).toEqual(["hr.globaltech.jobs@gmail.com"]);
+    expect(report2.extracted.unknownEmails).toEqual([]);
+
+    const report3 = analyze("If you have questions, please reach out to our HR representative at hr@acmetech.com. Our hiring contact is contact@acmetech.com.");
+    expect(report3.extracted.recruiterEmails).toEqual(["hr@acmetech.com", "contact@acmetech.com"]);
+    expect(report3.extracted.unknownEmails).toEqual([]);
+  });
+
   it("does not extract fee amounts or salary-processing prose as salary", () => {
     const report = analyze("Pay a registration fee of Rs 2,999. Share bank details for salary processing.");
     expect(report.extracted.salary).toBeNull();
