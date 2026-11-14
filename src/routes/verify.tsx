@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Columns3, Save, ScanSearch, Sparkles } from "lucide-react";
+import { ChevronDown, Columns3, Save, ScanSearch, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,7 @@ import { analyze, type Report } from "@/lib/verify/engine";
 import { ReportView } from "@/components/verify/ReportView";
 import { useSession } from "@/hooks/use-session";
 import { addPending, saveOfferWithReport } from "@/lib/offers";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/verify")({
   head: () => ({
@@ -61,6 +62,9 @@ function VerifyPage() {
   const navigate = useNavigate();
   const [savedFor, setSavedFor] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<"paste" | "file">("paste");
+  const [uploaded, setUploaded] = useState(false);
+  const [showExtracted, setShowExtracted] = useState(false);
 
   async function saveCurrent() {
     if (!report || savedFor === text) return true;
@@ -124,26 +128,78 @@ function VerifyPage() {
         <p className="mt-3 text-muted-foreground">Text is read and checked in your browser. Nothing is uploaded.</p>
 
         <div className="mt-8 rounded-2xl border bg-card p-6 shadow-card">
-          <Tabs defaultValue="paste">
+          <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as "paste" | "file")}>
             <TabsList>
               <TabsTrigger value="paste">Paste text</TabsTrigger>
               <TabsTrigger value="file">Upload PDF / image</TabsTrigger>
             </TabsList>
             <TabsContent value="file" forceMount className="mt-5 data-[state=inactive]:hidden">
-              <UploadEvidence onText={(value) => { setText(value); setIsSample(false); }} onBusy={setBusy} onPending={setPendingFiles} />
+              <UploadEvidence
+                onText={(value) => {
+                  setText(value);
+                  setIsSample(false);
+                  setUploaded(Boolean(value));
+                  setShowExtracted(false);
+                }}
+                onBusy={setBusy}
+                onPending={setPendingFiles}
+              />
             </TabsContent>
             <TabsContent value="paste" className="mt-5" />
           </Tabs>
 
-          <div className="mt-5">
-            <div className="mb-2 flex items-center justify-between">
-              <label htmlFor="offer" className="text-sm font-medium">Offer text {text && <span className="text-muted-foreground">(review and edit before checking)</span>}</label>
-              <button type="button" className="text-xs text-primary hover:underline" onClick={() => { setText(SAMPLE); setIsSample(true); }}>
-                <Sparkles className="mr-1 inline size-3" />Try a fictional sample
-              </button>
+          {activeTab === "file" || uploaded ? (
+            <div className="mt-5">
+              {text ? (
+                <div className="rounded-xl border bg-muted/30 p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Extracted text</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowExtracted((prev) => !prev)}
+                      className="text-xs text-primary hover:underline gap-1.5"
+                    >
+                      <ChevronDown className={cn("size-3.5 transition-transform", showExtracted && "rotate-180")} />
+                      {showExtracted ? "Hide extracted text" : "Expand extracted text"}
+                    </Button>
+                  </div>
+                  <div className={showExtracted ? "mt-3" : "hidden"}>
+                    <Textarea
+                      id="offer"
+                      value={text}
+                      onChange={(e) => { setText(e.target.value); setIsSample(false); }}
+                      rows={10}
+                      placeholder="Extracted offer text…"
+                      maxLength={50000}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="hidden">
+                  <Textarea
+                    id="offer"
+                    value={text}
+                    onChange={(e) => { setText(e.target.value); setIsSample(false); }}
+                    rows={12}
+                    placeholder="Paste the email, message or offer letter here…"
+                    maxLength={50000}
+                  />
+                </div>
+              )}
             </div>
-            <Textarea id="offer" value={text} onChange={(e) => { setText(e.target.value); setIsSample(false); }} rows={12} placeholder="Paste the email, message or offer letter here…" maxLength={50000} />
-          </div>
+          ) : (
+            <div className="mt-5">
+              <div className="mb-2 flex items-center justify-between">
+                <label htmlFor="offer" className="text-sm font-medium">Offer text {text && <span className="text-muted-foreground">(review and edit before checking)</span>}</label>
+                <button type="button" className="text-xs text-primary hover:underline" onClick={() => { setText(SAMPLE); setIsSample(true); setUploaded(false); }}>
+                  <Sparkles className="mr-1 inline size-3" />Try a fictional sample
+                </button>
+              </div>
+              <Textarea id="offer" value={text} onChange={(e) => { setText(e.target.value); setIsSample(false); }} rows={12} placeholder="Paste the email, message or offer letter here…" maxLength={50000} />
+            </div>
+          )}
           <Button size="lg" className="mt-5 w-full" onClick={run} disabled={busy || pendingFiles}>
             <ScanSearch className="size-4" /> Check this offer
           </Button>
