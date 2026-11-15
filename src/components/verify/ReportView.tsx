@@ -236,6 +236,10 @@ export function ReportView({
     },
   ];
 
+  const presentDetails = details.filter((item): item is { label: string; value: string } =>
+    Boolean(item.value && item.value.trim().length > 0),
+  );
+
   return (
     <div className="space-y-6 sm:space-y-8" id="report">
       {/* 1. Overall Assessment Banner */}
@@ -407,25 +411,25 @@ export function ReportView({
           )}
         </div>
 
-        <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5 text-sm">
-          {details.map((item) => (
-            <div
-              key={item.label}
-              className="flex flex-col border-b border-border/30 pb-2.5 sm:border-0 sm:pb-0"
-            >
-              <dt className="text-xs font-medium text-muted-foreground">{item.label}</dt>
-              <dd
-                className={
-                  item.value
-                    ? "mt-0.5 font-medium text-foreground break-words text-xs sm:text-sm"
-                    : "mt-0.5 italic text-muted-foreground text-xs sm:text-sm"
-                }
+        {presentDetails.length > 0 ? (
+          <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5 text-sm">
+            {presentDetails.map((item) => (
+              <div
+                key={item.label}
+                className="flex flex-col border-b border-border/30 pb-2.5 sm:border-0 sm:pb-0"
               >
-                {item.value ?? "Not found"}
-              </dd>
-            </div>
-          ))}
-        </dl>
+                <dt className="text-xs font-medium text-muted-foreground">{item.label}</dt>
+                <dd className="mt-0.5 font-medium text-foreground break-words text-xs sm:text-sm">
+                  {item.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        ) : (
+          <p className="mt-4 text-xs italic text-muted-foreground">
+            No specific offer details could be extracted from the document.
+          </p>
+        )}
       </section>
 
       {/* 4. OfferProof Action Guide */}

@@ -264,6 +264,10 @@ describe("NVIDIA-Powered Intelligent Extraction & Verification", () => {
         expect(utils.queryByText(/Supporting line:/i)).toBeNull();
       });
 
+      // Verify that details not present in the offer are not shown (no "Not found" placeholders)
+      expect(utils.queryByText(/Not found/i)).toBeNull();
+      expect(utils.queryByText("Emails (owner unclear)")).toBeNull();
+
       // Verify NVIDIA Nemotron badge is rendered
       expect(utils.getByText("NVIDIA Nemotron")).toBeInTheDocument();
     });
