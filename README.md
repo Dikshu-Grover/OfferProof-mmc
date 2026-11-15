@@ -276,7 +276,7 @@ Full rule specifications, including regex signatures and negation-clause handlin
 | Artificial intelligence | NVIDIA Nemotron 3.5               | `nvidia/nemotron-3.5-bolt-e4b` advisory recommendations, intelligent extraction, and AI Career Advisor |
 | Threat intelligence     | Google Cloud BigQuery             | `offerproof_analytics.job_postings` analytics                                                          |
 | Testing                 | Vitest, Testing Library           | 14 suites covering rules, session isolation, extraction, and UI                                        |
-| Runtime and deployment  | Nitro (Cloudflare Workers target) | Edge-compatible production build                                                                       |
+| Runtime and deployment  | Lovable-managed deployment        | Edge-compatible production build                                                                       |
 
 ---
 
