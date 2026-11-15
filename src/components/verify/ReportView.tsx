@@ -185,67 +185,54 @@ export function ReportView({
   const details: {
     label: string;
     value: string | null;
-    sentence: string | null;
   }[] = [
     {
       label: "Company",
       value: extractionData.company.value,
-      sentence: extractionData.company.sentence,
     },
     {
       label: "Recruiter",
       value: extractionData.recruiter.value,
-      sentence: extractionData.recruiter.sentence,
     },
     {
       label: "Job title",
       value: extractionData.jobTitle.value,
-      sentence: extractionData.jobTitle.sentence,
     },
     {
       label: "Salary / stipend",
       value: salaryDisplay,
-      sentence: extractionData.salary.sentence,
     },
     {
       label: "Joining date",
       value: extractionData.joiningDate.value,
-      sentence: extractionData.joiningDate.sentence,
     },
     {
       label: "Location",
       value: extractionData.location.value,
-      sentence: extractionData.location.sentence,
     },
     {
       label: "Applicant emails",
       value: extractionData.applicantEmails.values.join(", ") || null,
-      sentence: extractionData.applicantEmails.sentences[0] || null,
     },
     {
       label: "Recruiter / contact emails",
       value: extractionData.recruiterEmails.values.join(", ") || null,
-      sentence: extractionData.recruiterEmails.sentences[0] || null,
     },
     {
       label: "Emails (owner unclear)",
       value: extractionData.unknownEmails.values.join(", ") || null,
-      sentence: extractionData.unknownEmails.sentences[0] || null,
     },
     {
       label: "Phone numbers",
       value: extractionData.phones.values.join(", ") || null,
-      sentence: extractionData.phones.sentences[0] || null,
     },
     {
       label: "Domains",
       value: extractionData.domains.values.join(", ") || null,
-      sentence: extractionData.domains.sentences[0] || null,
     },
     {
       label: "Web links",
       value: extractionData.urls.values.join(", ") || null,
-      sentence: extractionData.urls.sentences[0] || null,
     },
   ];
 
@@ -436,14 +423,6 @@ export function ReportView({
               >
                 {item.value ?? "Not found"}
               </dd>
-              {item.sentence && (
-                <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed italic bg-muted/40 rounded px-2.5 py-1 border border-border/40 break-words">
-                  <span className="not-italic font-semibold text-foreground/75 text-[10px] block mb-0.5">
-                    Supporting line:
-                  </span>
-                  “{item.sentence}”
-                </p>
-              )}
             </div>
           ))}
         </dl>

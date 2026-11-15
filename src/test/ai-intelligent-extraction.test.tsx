@@ -259,10 +259,9 @@ describe("NVIDIA-Powered Intelligent Extraction & Verification", () => {
       expect(utils.getByText("Cyber City, Gurugram")).toBeInTheDocument();
       expect(utils.getByText("December 1, 2026")).toBeInTheDocument();
 
-      // Verify that exact supporting lines are displayed under extracted values
+      // Verify that supporting lines are not rendered under extracted details
       await waitFor(() => {
-        const supportingLines = utils.getAllByText(/Supporting line:/i);
-        expect(supportingLines.length).toBeGreaterThanOrEqual(4);
+        expect(utils.queryByText(/Supporting line:/i)).toBeNull();
       });
 
       // Verify NVIDIA Nemotron badge is rendered
