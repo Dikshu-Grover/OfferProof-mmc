@@ -60,8 +60,34 @@ export function Login() {
             emailRedirectTo: `${window.location.origin}/login?redirect=${encodeURIComponent(target)}`,
           },
         });
+
+        // If the user already signed up once, just log them in
+        const isExistingUser =
+          (data?.user?.identities && data.user.identities.length === 0) ||
+          (error &&
+            (error.message?.toLowerCase().includes("already registered") ||
+              error.message?.toLowerCase().includes("already exists")));
+
+        if (isExistingUser) {
+          const { error: signInErr } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          if (!signInErr) {
+            navigate({ to: target, replace: true });
+            return;
+          }
+          if (signInErr.message?.toLowerCase().includes("invalid login credentials")) {
+            toast.error(
+              "An account with this email already exists. Please enter your existing password to sign in.",
+            );
+            return;
+          }
+          throw signInErr;
+        }
+
         if (error) throw error;
-        if (!data.session) {
+        if (!data?.session) {
           setSent(true);
           return;
         }

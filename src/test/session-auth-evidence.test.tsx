@@ -140,6 +140,96 @@ describe("Original Supabase Magic-Link Authentication Flow", () => {
     });
   });
 
+  it("when user account already signed up once, trying to sign up again just logs them in", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+    // Supabase returns identities: [] when user already registered with email enumeration protection
+    mockSignUp.mockResolvedValue({
+      data: {
+        user: { id: "existing-user-id", identities: [] },
+        session: null,
+      },
+      error: null,
+    });
+    mockSignInWithPassword.mockResolvedValue({
+      data: { session: { access_token: "existing_token" }, user: { id: "existing-user-id" } },
+      error: null,
+    });
+
+    render(<Login />);
+
+    // Switch to Sign up tab
+    const signUpTab = screen.getByRole("tab", { name: "Sign up" });
+    fireEvent.keyDown(signUpTab, { key: "Enter", code: "Enter", charCode: 13 });
+    fireEvent.click(signUpTab);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Create your account" })).toBeInTheDocument();
+    });
+
+    const emailInput = screen.getByLabelText("Email");
+    const passwordInput = screen.getByLabelText("Password");
+    const submitBtn = screen.getByRole("button", { name: "Create account" });
+
+    fireEvent.change(emailInput, { target: { value: "alreadyregistered@example.com" } });
+    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockSignUp).toHaveBeenCalledWith({
+        email: "alreadyregistered@example.com",
+        password: "password123",
+        options: {
+          emailRedirectTo: expect.stringContaining("/login?redirect=%2Fverify"),
+        },
+      });
+      // Should automatically log them in
+      expect(mockSignInWithPassword).toHaveBeenCalledWith({
+        email: "alreadyregistered@example.com",
+        password: "password123",
+      });
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/verify", replace: true });
+    });
+  });
+
+  it("when user account already signed up once and signUp returns error, automatically logs them in", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+    // Supabase returns error when user already registered without email enumeration protection
+    mockSignUp.mockResolvedValue({
+      data: { user: null, session: null },
+      error: new Error("User already registered"),
+    });
+    mockSignInWithPassword.mockResolvedValue({
+      data: { session: { access_token: "token123" } },
+      error: null,
+    });
+
+    render(<Login />);
+
+    const signUpTab = screen.getByRole("tab", { name: "Sign up" });
+    fireEvent.keyDown(signUpTab, { key: "Enter", code: "Enter", charCode: 13 });
+    fireEvent.click(signUpTab);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Create your account" })).toBeInTheDocument();
+    });
+
+    const emailInput = screen.getByLabelText("Email");
+    const passwordInput = screen.getByLabelText("Password");
+    const submitBtn = screen.getByRole("button", { name: "Create account" });
+
+    fireEvent.change(emailInput, { target: { value: "existing@example.com" } });
+    fireEvent.change(passwordInput, { target: { value: "mypassword123" } });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockSignInWithPassword).toHaveBeenCalledWith({
+        email: "existing@example.com",
+        password: "mypassword123",
+      });
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/verify", replace: true });
+    });
+  });
+
   it("validates email format and minimum password length", async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 
