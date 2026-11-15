@@ -324,4 +324,56 @@ describe("Improvement 3: Highlighted Evidence dropdown", () => {
     expect(viewEvidenceBtn).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByText("View Evidence (1)")).toBeInTheDocument();
   });
+
+  it("does not show 'Not found' in the view evidence under warning signals", async () => {
+    const mockFindingWithNotFound: Finding = {
+      id: "missing_details",
+      name: "Missing key details",
+      severity: "medium",
+      evidence: ["Not found: Company name", "Not found: Salary / stipend"],
+      explanation:
+        "Formal offers normally state the employer, role, pay, location and contact details.",
+      action: "Ask the recruiter for a formal offer letter.",
+    };
+
+    const mockReport: Report = {
+      assessment: "needs_review",
+      points: 4,
+      findings: [mockFindingWithNotFound],
+      extracted: {
+        company: null,
+        recruiter: null,
+        jobTitle: "Software Intern",
+        salary: null,
+        joiningDate: null,
+        location: null,
+        emails: [],
+        domains: [],
+        urls: [],
+        phones: [],
+      },
+      phrases: [],
+    };
+
+    render(
+      <ReportView
+        report={mockReport}
+        text="We offer you Software Intern position."
+        onReset={() => {}}
+      />,
+    );
+
+    // Click to expand evidence for Missing key details
+    const viewEvidenceBtn = screen.getByRole("button", {
+      name: "View evidence for Missing key details",
+    });
+    expect(viewEvidenceBtn).toBeInTheDocument();
+    fireEvent.click(viewEvidenceBtn);
+
+    // Verify 'Not found' does NOT appear in the expanded evidence container
+    expect(screen.queryByText(/Not found/i)).toBeNull();
+    // Verify the clean field names are displayed
+    expect(screen.getByText("Company name")).toBeInTheDocument();
+    expect(screen.getByText("Salary / stipend")).toBeInTheDocument();
+  });
 });

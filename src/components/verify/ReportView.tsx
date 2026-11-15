@@ -321,60 +321,72 @@ export function ReportView({
                   </span>
                 </p>
 
-                {f.evidence.length > 0 && (
-                  <div className="mt-2.5 border-t border-border/40 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => toggleEvidence(f.id)}
-                      className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline focus:outline-none print:hidden cursor-pointer"
-                      aria-expanded={expandedEvidence.has(f.id)}
-                      aria-label={`View evidence for ${f.name}`}
-                    >
-                      <ChevronDown
-                        className={`size-3.5 transition-transform duration-200 ${
-                          expandedEvidence.has(f.id) ? "rotate-180" : ""
-                        }`}
-                      />
-                      <span>
-                        {expandedEvidence.has(f.id)
-                          ? "Hide Evidence"
-                          : `View Evidence (${f.evidence.length})`}
-                      </span>
-                    </button>
+                {(() => {
+                  const visibleEvidence = f.evidence
+                    .map((e) => e.replace(/^(?:Not found:\s*|Not found\b\s*)/i, "").trim())
+                    .filter((e) => e.length > 0 && e.toLowerCase() !== "not found");
 
-                    <div
-                      className={`mt-2 space-y-1.5 ${
-                        expandedEvidence.has(f.id) ? "block" : "hidden print:block"
-                      }`}
-                    >
-                      {f.evidence.map((e, idx) => {
-                        const snippet = getEvidenceSnippet(text, e);
-                        return (
-                          <div
-                            key={`${f.id}-ev-${idx}`}
-                            className="rounded-lg border bg-muted/40 px-3 py-2 text-xs leading-relaxed text-foreground break-words"
-                          >
-                            {snippet ? (
-                              <span>
-                                “{snippet.prefix}
-                                <mark className={f.severity === "high" ? "mark-high" : "mark-warn"}>
-                                  {snippet.highlight}
-                                </mark>
-                                {snippet.suffix}”
-                              </span>
-                            ) : (
-                              <span className="font-medium">
-                                <mark className={f.severity === "high" ? "mark-high" : "mark-warn"}>
-                                  {e}
-                                </mark>
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
+                  if (visibleEvidence.length === 0) return null;
+
+                  return (
+                    <div className="mt-2.5 border-t border-border/40 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleEvidence(f.id)}
+                        className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline focus:outline-none print:hidden cursor-pointer"
+                        aria-expanded={expandedEvidence.has(f.id)}
+                        aria-label={`View evidence for ${f.name}`}
+                      >
+                        <ChevronDown
+                          className={`size-3.5 transition-transform duration-200 ${
+                            expandedEvidence.has(f.id) ? "rotate-180" : ""
+                          }`}
+                        />
+                        <span>
+                          {expandedEvidence.has(f.id)
+                            ? "Hide Evidence"
+                            : `View Evidence (${visibleEvidence.length})`}
+                        </span>
+                      </button>
+
+                      <div
+                        className={`mt-2 space-y-1.5 ${
+                          expandedEvidence.has(f.id) ? "block" : "hidden print:block"
+                        }`}
+                      >
+                        {visibleEvidence.map((e, idx) => {
+                          const snippet = getEvidenceSnippet(text, e);
+                          return (
+                            <div
+                              key={`${f.id}-ev-${idx}`}
+                              className="rounded-lg border bg-muted/40 px-3 py-2 text-xs leading-relaxed text-foreground break-words"
+                            >
+                              {snippet ? (
+                                <span>
+                                  “{snippet.prefix}
+                                  <mark
+                                    className={f.severity === "high" ? "mark-high" : "mark-warn"}
+                                  >
+                                    {snippet.highlight}
+                                  </mark>
+                                  {snippet.suffix}”
+                                </span>
+                              ) : (
+                                <span className="font-medium">
+                                  <mark
+                                    className={f.severity === "high" ? "mark-high" : "mark-warn"}
+                                  >
+                                    {e}
+                                  </mark>
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </article>
             ))}
           </div>
