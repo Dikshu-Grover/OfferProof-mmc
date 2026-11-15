@@ -39,7 +39,7 @@ interface CompareOfferItem {
 }
 
 interface RequestPayload {
-  mode?: "single" | "compare";
+  mode?: "single" | "compare" | "extract";
   sessionId?: string;
   // Single-offer mode
   offerText?: unknown;
@@ -111,6 +111,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   const isCompareMode =
     payload.mode === "compare" || (Array.isArray(payload.offers) && payload.offers.length > 0);
+  const isExtractMode = payload.mode === "extract";
 
   let systemPrompt = "";
   let userPrompt = "";
@@ -119,7 +120,55 @@ Deno.serve(async (req: Request): Promise<Response> => {
     (typeof payload.sessionId === "string" ? payload.sessionId : undefined) ||
     (typeof payload.context?.sessionId === "string" ? payload.context.sessionId : undefined);
 
-  if (isCompareMode) {
+  if (isExtractMode) {
+    const rawOfferText = typeof payload.offerText === "string" ? payload.offerText.trim() : "";
+    if (!rawOfferText) {
+      return new Response(
+        JSON.stringify({
+          error: "Missing required field: 'offerText' must be a non-empty string.",
+        }),
+        {
+          status: 400,
+          headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    systemPrompt =
+      "You are OfferProof AI, an intelligent document field extractor powered by NVIDIA Nemotron.\n" +
+      "Extract employment and verification details from the provided job or internship offer document.\n" +
+      "Respond ONLY with a valid JSON object matching this schema:\n" +
+      "{\n" +
+      '  "company": string | null,\n' +
+      '  "companyQuote": string | null,\n' +
+      '  "recruiter": string | null,\n' +
+      '  "recruiterQuote": string | null,\n' +
+      '  "jobTitle": string | null,\n' +
+      '  "jobTitleQuote": string | null,\n' +
+      '  "salary": string | null,\n' +
+      '  "salaryQuote": string | null,\n' +
+      '  "joiningDate": string | null,\n' +
+      '  "joiningDateQuote": string | null,\n' +
+      '  "location": string | null,\n' +
+      '  "locationQuote": string | null,\n' +
+      '  "applicantEmails": string[],\n' +
+      '  "recruiterEmails": string[],\n' +
+      '  "phones": string[],\n' +
+      '  "domains": string[],\n' +
+      '  "urls": string[]\n' +
+      "}\n\n" +
+      "STRICT EXTRACTION RULES:\n" +
+      "1. Extract ONLY facts explicitly stated in the document. If a field is not present, set it to null (or empty array for lists).\n" +
+      "2. For all *Quote fields, provide the exact verbatim sentence from the text supporting the extracted value.\n" +
+      "3. Distinguish carefully between applicant emails (candidate/recipient) and recruiter/company emails.\n" +
+      "4. Include all phone numbers, email domains, and website links found.\n" +
+      "5. Output valid JSON only, without markdown fences, explanation, or conversational text.";
+
+    userPrompt =
+      `Please extract all employment details from the following offer document:\n\n` +
+      `--- Offer Text ---\n${rawOfferText.slice(0, 15000)}`;
+    maxTokens = 1200;
+  } else if (isCompareMode) {
     if (!Array.isArray(payload.offers) || payload.offers.length < 2) {
       return new Response(
         JSON.stringify({
@@ -267,7 +316,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.3,
+        temperature: isExtractMode ? 0.1 : 0.3,
         max_tokens: maxTokens,
       }),
       signal: controller.signal,
@@ -280,7 +329,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       console.error(`NVIDIA API HTTP ${nvidiaResponse.status}:`, errText);
       return new Response(
         JSON.stringify({
-          error: "Failed to generate AI recommendations from NVIDIA service.",
+          error: "Failed to generate AI response from NVIDIA service.",
           status: nvidiaResponse.status,
         }),
         {
@@ -291,12 +340,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     const data = await nvidiaResponse.json();
-    const recommendations = data.choices?.[0]?.message?.content?.trim() || "";
+    const rawContent = data.choices?.[0]?.message?.content?.trim() || "";
 
-    if (!recommendations) {
+    if (!rawContent) {
       return new Response(
         JSON.stringify({
-          error: "NVIDIA service returned an empty recommendation.",
+          error: "NVIDIA service returned an empty response.",
         }),
         {
           status: 502,
@@ -305,10 +354,35 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
     }
 
+    if (isExtractMode) {
+      let extracted: unknown = null;
+      try {
+        const cleaned = rawContent
+          .replace(/^```(?:json)?\s*/i, "")
+          .replace(/```\s*$/i, "")
+          .trim();
+        extracted = JSON.parse(cleaned);
+      } catch (e) {
+        console.error("Failed to parse Nemotron extraction JSON:", e, rawContent);
+      }
+
+      return new Response(
+        JSON.stringify({
+          extracted,
+          model: MODEL_NAME,
+          sessionId,
+        }),
+        {
+          status: 200,
+          headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+        },
+      );
+    }
+
     // Return AI recommendations separately without mutating verification logic or scores
     return new Response(
       JSON.stringify({
-        recommendations,
+        recommendations: rawContent,
         model: MODEL_NAME,
         sessionId,
       }),

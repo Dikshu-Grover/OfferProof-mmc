@@ -1,9 +1,91 @@
-import { AlertOctagon, AlertTriangle, CheckCircle2, Info, Printer } from "lucide-react";
-import { ASSESSMENT_META, classifyEmails, type Report, type Severity } from "@/lib/verify/engine";
+import { useEffect, useState } from "react";
+import {
+  AlertOctagon,
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  Info,
+  Loader2,
+  Printer,
+  Sparkles,
+} from "lucide-react";
+import { ASSESSMENT_META, type Report, type Severity } from "@/lib/verify/engine";
 import { Button } from "@/components/ui/button";
 import { Checklist } from "./Checklist";
 import { AiRecommendations } from "./AiRecommendations";
 import { parseSalary } from "@/lib/compare/engine";
+import { supabase } from "@/integrations/supabase/client";
+import { buildExtractedDetails, type ExtractedDetailsData } from "@/lib/verify/extraction";
+
+export function getEvidenceSnippet(
+  fullText: string,
+  evidenceItem: string,
+): { prefix: string; highlight: string; suffix: string } | null {
+  if (!fullText || !evidenceItem) return null;
+
+  // Clean metadata labels so the exact target can be matched in the original uploaded offer
+  const cleanTarget = evidenceItem
+    .replace(/^(?:Company|Domain|Free email|Sender|URL|Not found):\s*/i, "")
+    .trim();
+  if (!cleanTarget) return null;
+
+  const lowerText = fullText.toLowerCase();
+  const lowerEv = cleanTarget.toLowerCase();
+
+  let idx = lowerText.indexOf(lowerEv);
+  if (idx === -1) {
+    const words = lowerEv.split(/\s+/).filter((w) => w.length >= 3);
+    if (words.length > 0) {
+      for (const word of words) {
+        const found = lowerText.indexOf(word);
+        if (found !== -1) {
+          idx = found;
+          break;
+        }
+      }
+    }
+  }
+  if (idx === -1) return null;
+
+  // Search backwards for the line or sentence boundary in the uploaded text
+  let start = idx;
+  while (start > 0 && !/[\n]/.test(fullText.charAt(start - 1))) {
+    if (idx - start >= 140 && /[.!?]/.test(fullText.charAt(start - 1))) break;
+    start--;
+  }
+  while (start < idx && /[\s\-*•]/.test(fullText.charAt(start))) {
+    start++;
+  }
+
+  // Search forwards for the line or sentence boundary in the uploaded text
+  let end = idx + cleanTarget.length;
+  while (end < fullText.length && !/[\n]/.test(fullText.charAt(end))) {
+    if (end - idx >= 140 && /[.!?]/.test(fullText.charAt(end))) {
+      end++;
+      break;
+    }
+    end++;
+  }
+  if (end < fullText.length && /[.!?]/.test(fullText.charAt(end))) {
+    end++;
+  }
+
+  const rawSentence = fullText.slice(start, end).trim();
+  const matchInSentence = rawSentence.toLowerCase().indexOf(lowerEv);
+  if (matchInSentence === -1) {
+    return {
+      prefix: "",
+      highlight: rawSentence,
+      suffix: "",
+    };
+  }
+
+  return {
+    prefix: rawSentence.slice(0, matchInSentence),
+    highlight: rawSentence.slice(matchInSentence, matchInSentence + cleanTarget.length),
+    suffix: rawSentence.slice(matchInSentence + cleanTarget.length),
+  };
+}
 
 const SEV: Record<Severity, { label: string; cls: string; bar: string }> = {
   high: { label: "High", cls: "bg-high-soft text-high", bar: "border-high" },
@@ -22,6 +104,16 @@ export function ReportView({
   onReset: () => void;
   sessionId?: string | undefined;
 }) {
+  const [expandedEvidence, setExpandedEvidence] = useState<Set<string>>(new Set());
+  const toggleEvidence = (id: string) => {
+    setExpandedEvidence((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const meta = ASSESSMENT_META[report.assessment];
   const tone =
     report.assessment === "high_concern"
@@ -29,9 +121,50 @@ export function ReportView({
       : report.assessment === "needs_review"
         ? { Icon: AlertTriangle, cls: "border-warn bg-warn-soft", ic: "text-warn" }
         : { Icon: CheckCircle2, cls: "border-low bg-low-soft", ic: "text-low" };
-  const x = report.extracted;
-  const salary = parseSalary(x.salary);
-  const salaryPeriods = {
+
+  const [extractionData, setExtractionData] = useState<ExtractedDetailsData>(() =>
+    buildExtractedDetails(text, report.extracted, null),
+  );
+  const [extractionLoading, setExtractionLoading] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    setExtractionLoading(true);
+    supabase.functions
+      .invoke("offerproof-ai-recommendations", {
+        body: {
+          mode: "extract",
+          offerText: trimmed,
+          sessionId,
+        },
+      })
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error || !data?.extracted) {
+          setExtractionLoading(false);
+          return;
+        }
+        if (data.sessionId && data.sessionId !== sessionId) {
+          return;
+        }
+        const validated = buildExtractedDetails(text, report.extracted, data.extracted);
+        setExtractionData(validated);
+        setExtractionLoading(false);
+      })
+      .catch(() => {
+        if (active) setExtractionLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [text, report.extracted, sessionId]);
+
+  const salary = parseSalary(extractionData.salary.value);
+  const salaryPeriods: Record<string, string> = {
     year: "annual",
     month: "monthly",
     week: "weekly",
@@ -47,19 +180,73 @@ export function ReportView({
         ]
           .filter(Boolean)
           .join(" · ")
-      : x.salary;
-  const emailRoles = classifyEmails(text, x.emails);
-  const details: [string, string | null][] = [
-    ["Company", x.company],
-    ["Recruiter", x.recruiter],
-    ["Job title", x.jobTitle],
-    ["Salary / stipend", salaryDisplay],
-    ["Joining date", x.joiningDate],
-    ["Location", x.location],
-    ["Applicant emails", emailRoles.applicantEmails.join(", ") || null],
-    ["Recruiter / contact emails", emailRoles.recruiterEmails.join(", ") || null],
-    ["Emails (owner unclear)", emailRoles.unknownEmails.join(", ") || null],
-    ["Phone numbers", x.phones.join(", ") || null],
+      : extractionData.salary.value;
+
+  const details: {
+    label: string;
+    value: string | null;
+    sentence: string | null;
+  }[] = [
+    {
+      label: "Company",
+      value: extractionData.company.value,
+      sentence: extractionData.company.sentence,
+    },
+    {
+      label: "Recruiter",
+      value: extractionData.recruiter.value,
+      sentence: extractionData.recruiter.sentence,
+    },
+    {
+      label: "Job title",
+      value: extractionData.jobTitle.value,
+      sentence: extractionData.jobTitle.sentence,
+    },
+    {
+      label: "Salary / stipend",
+      value: salaryDisplay,
+      sentence: extractionData.salary.sentence,
+    },
+    {
+      label: "Joining date",
+      value: extractionData.joiningDate.value,
+      sentence: extractionData.joiningDate.sentence,
+    },
+    {
+      label: "Location",
+      value: extractionData.location.value,
+      sentence: extractionData.location.sentence,
+    },
+    {
+      label: "Applicant emails",
+      value: extractionData.applicantEmails.values.join(", ") || null,
+      sentence: extractionData.applicantEmails.sentences[0] || null,
+    },
+    {
+      label: "Recruiter / contact emails",
+      value: extractionData.recruiterEmails.values.join(", ") || null,
+      sentence: extractionData.recruiterEmails.sentences[0] || null,
+    },
+    {
+      label: "Emails (owner unclear)",
+      value: extractionData.unknownEmails.values.join(", ") || null,
+      sentence: extractionData.unknownEmails.sentences[0] || null,
+    },
+    {
+      label: "Phone numbers",
+      value: extractionData.phones.values.join(", ") || null,
+      sentence: extractionData.phones.sentences[0] || null,
+    },
+    {
+      label: "Domains",
+      value: extractionData.domains.values.join(", ") || null,
+      sentence: extractionData.domains.sentences[0] || null,
+    },
+    {
+      label: "Web links",
+      value: extractionData.urls.values.join(", ") || null,
+      sentence: extractionData.urls.sentences[0] || null,
+    },
   ];
 
   return (
@@ -133,15 +320,6 @@ export function ReportView({
                     {SEV[f.severity].label}
                   </span>
                 </div>
-                {f.evidence.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {f.evidence.map((e) => (
-                      <code key={e} className="rounded bg-muted px-2 py-0.5 text-[11px] break-all">
-                        “{e}”
-                      </code>
-                    ))}
-                  </div>
-                )}
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                   {f.explanation}
                 </p>
@@ -151,6 +329,61 @@ export function ReportView({
                     <b>What to do:</b> {f.action}
                   </span>
                 </p>
+
+                {f.evidence.length > 0 && (
+                  <div className="mt-2.5 border-t border-border/40 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleEvidence(f.id)}
+                      className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline focus:outline-none print:hidden cursor-pointer"
+                      aria-expanded={expandedEvidence.has(f.id)}
+                      aria-label={`View evidence for ${f.name}`}
+                    >
+                      <ChevronDown
+                        className={`size-3.5 transition-transform duration-200 ${
+                          expandedEvidence.has(f.id) ? "rotate-180" : ""
+                        }`}
+                      />
+                      <span>
+                        {expandedEvidence.has(f.id)
+                          ? "Hide Evidence"
+                          : `View Evidence (${f.evidence.length})`}
+                      </span>
+                    </button>
+
+                    <div
+                      className={`mt-2 space-y-1.5 ${
+                        expandedEvidence.has(f.id) ? "block" : "hidden print:block"
+                      }`}
+                    >
+                      {f.evidence.map((e, idx) => {
+                        const snippet = getEvidenceSnippet(text, e);
+                        return (
+                          <div
+                            key={`${f.id}-ev-${idx}`}
+                            className="rounded-lg border bg-muted/40 px-3 py-2 text-xs leading-relaxed text-foreground break-words"
+                          >
+                            {snippet ? (
+                              <span>
+                                “{snippet.prefix}
+                                <mark className={f.severity === "high" ? "mark-high" : "mark-warn"}>
+                                  {snippet.highlight}
+                                </mark>
+                                {snippet.suffix}”
+                              </span>
+                            ) : (
+                              <span className="font-medium">
+                                <mark className={f.severity === "high" ? "mark-high" : "mark-warn"}>
+                                  {e}
+                                </mark>
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </article>
             ))}
           </div>
@@ -165,53 +398,54 @@ export function ReportView({
         aria-label="Extracted Details"
         className="rounded-2xl border bg-card p-5 sm:p-6 shadow-card print:hidden"
       >
-        <div className="border-b pb-3.5">
-          <h3 className="text-lg sm:text-xl font-bold">Extracted Details</h3>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Details found in the offer; employer identity has not been independently verified.
-          </p>
+        <div className="border-b pb-3.5 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+              Extracted Details
+              {extractionData.isAiEnhanced && (
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
+                  <Sparkles className="size-3" /> NVIDIA Nemotron
+                </span>
+              )}
+            </h3>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Details found in the offer; employer identity has not been independently verified.
+            </p>
+          </div>
+          {extractionLoading && (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin text-primary" />
+              <span>Analyzing details...</span>
+            </div>
+          )}
         </div>
 
-        <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-          {details.map(([k, v]) => (
+        <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5 text-sm">
+          {details.map((item) => (
             <div
-              key={k}
-              className="flex flex-col border-b border-border/30 pb-2 sm:border-0 sm:pb-0"
+              key={item.label}
+              className="flex flex-col border-b border-border/30 pb-2.5 sm:border-0 sm:pb-0"
             >
-              <dt className="text-xs font-medium text-muted-foreground">{k}</dt>
+              <dt className="text-xs font-medium text-muted-foreground">{item.label}</dt>
               <dd
                 className={
-                  v
+                  item.value
                     ? "mt-0.5 font-medium text-foreground break-words text-xs sm:text-sm"
                     : "mt-0.5 italic text-muted-foreground text-xs sm:text-sm"
                 }
               >
-                {v ?? "Not found"}
+                {item.value ?? "Not found"}
               </dd>
+              {item.sentence && (
+                <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed italic bg-muted/40 rounded px-2.5 py-1 border border-border/40 break-words">
+                  <span className="not-italic font-semibold text-foreground/75 text-[10px] block mb-0.5">
+                    Supporting line:
+                  </span>
+                  “{item.sentence}”
+                </p>
+              )}
             </div>
           ))}
-          <div className="flex flex-col border-b border-border/30 pb-2 sm:border-0 sm:pb-0">
-            <dt className="text-xs font-medium text-muted-foreground">Domains</dt>
-            <dd className="mt-0.5 text-xs sm:text-sm">
-              {x.domains.length === 0 ? (
-                <span className="italic text-muted-foreground">None found</span>
-              ) : (
-                <span className="font-medium text-foreground break-all">
-                  {x.domains.join(", ")}
-                </span>
-              )}
-            </dd>
-          </div>
-          <div className="flex flex-col">
-            <dt className="text-xs font-medium text-muted-foreground">Web links</dt>
-            <dd className="mt-0.5 text-xs sm:text-sm">
-              {x.urls.length === 0 ? (
-                <span className="italic text-muted-foreground">None found</span>
-              ) : (
-                <span className="font-medium text-foreground break-all">{x.urls.join(", ")}</span>
-              )}
-            </dd>
-          </div>
         </dl>
       </section>
 

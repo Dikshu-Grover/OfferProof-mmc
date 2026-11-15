@@ -149,6 +149,11 @@ On the `/compare` route:
 1. The user selects two or more saved offers by ticking checkboxes.
 2. `compareOffers(rows)` from `compare/engine.ts` runs — also pure TypeScript, no network.
 3. Salaries are annualised using `PERIOD_FACTOR` (month×12, week×52, day×260, hour×2080) for fair comparison.
-4. A **Career Fit** table shows role, salary, benefits, location/work mode, growth rating, work-life rating and terms. The best value in each numeric column is highlighted.
-5. **Safety Warnings** shows the assessment and finding names from each offer's latest verification report.
+4. The **AI Career Advisor powered by NVIDIA Nemotron** (`AiCompareAdvisor.tsx`) evaluates the selected offers alongside candidate priorities and personal career goals to generate:
+   - **Best Career Fit**: Decisive recommendation on the strongest career match.
+   - **Comparison Summary & Pros/Cons**: Objective breakdown of each offer's trade-offs.
+   - **Salary & Career Growth Insights**: Analysis of total compensation, progression, and purchasing power.
+   - **Missing Information & Recruiter Questions**: Clear list of ambiguities and specific questions to ask recruiters.
+   - **Personalized Recommendations**: Concrete negotiation and decision advice.
+5. **Safety Warnings** display heuristic findings from each offer's verification report, keeping safety validation completely decoupled from career fit.
 6. The comparison can be named and saved to the `comparisons` table.

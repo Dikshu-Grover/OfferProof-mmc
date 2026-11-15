@@ -11,7 +11,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nITIjEAb9H9pr7RDvhII2Q_1v5NqzUz
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: brokeredPreviewStorage(),
+    storage: typeof window !== "undefined" ? window.sessionStorage : undefined,
     persistSession: true,
     autoRefreshToken: true,
   },

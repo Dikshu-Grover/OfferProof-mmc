@@ -38,19 +38,19 @@ Both libraries run entirely in the browser. No file bytes are sent to any server
 
 ## External APIs
 
-| API                              | Used by                                       | Purpose                                                                            |
-| -------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------- |
-| **NVIDIA Inference API**         | `offerproof-ai-recommendations` Edge Function | Generates structured AI recommendations using `nvidia/nemotron-3.5-bolt-e4b` model |
-| **Google BigQuery REST API**     | `offerproof-job-postings` Edge Function       | Queries `xenon-hub-514707-f9.offerproof_analytics.job_postings` dataset            |
-| **Google OAuth2 token endpoint** | `offerproof-job-postings` Edge Function       | Mints a short-lived access token from a service account JWT (RS256)                |
+| API                              | Used by                                       | Purpose                                                                                                                                            |
+| -------------------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **NVIDIA Inference API**         | `offerproof-ai-recommendations` Edge Function | Powers AI Verification Recommendations, Intelligent Field Extraction, and the **AI Career Advisor** using the `nvidia/nemotron-3.5-bolt-e4b` model |
+| **Google BigQuery REST API**     | `offerproof-job-postings` Edge Function       | Queries `xenon-hub-514707-f9.offerproof_analytics.job_postings` dataset                                                                            |
+| **Google OAuth2 token endpoint** | `offerproof-job-postings` Edge Function       | Mints a short-lived access token from a service account JWT (RS256)                                                                                |
 
 ## AI Model
 
-| Model                          | Provider             | Usage                                                                                                |
-| ------------------------------ | -------------------- | ---------------------------------------------------------------------------------------------------- |
-| `nvidia/nemotron-3.5-bolt-e4b` | NVIDIA Inference API | Generates contextual recommendations: Verification Steps, Recruiter Questions, Important Precautions |
+| Model                          | Provider             | Usage                                                                                                                                                                                                                                                                                                     |
+| ------------------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nvidia/nemotron-3.5-bolt-e4b` | NVIDIA Inference API | **1. Single-Offer Verification:** Verification Steps, Recruiter Questions, Important Precautions.<br>**2. Intelligent Extraction:** High-accuracy field and verbatim quote extraction.<br>**3. AI Career Advisor:** Multi-offer comparative analysis, trade-offs, salary growth insights, and career fit. |
 
-The model receives the offer text (truncated to 15,000 characters) plus a structured verification context (assessment level, existing heuristic findings, company name, job title) in a system/user message pair.
+The model is hosted on NVIDIA's inference platform and accessed securely through the `offerproof-ai-recommendations` Supabase Edge Function using the server-side `NVIDIA_API_KEY` secret. In verification mode, the model receives redacted offer text and heuristic context. In comparison mode, it evaluates side-by-side job offer compensation, terms, benefits, and candidate preferences while keeping career suitability strictly decoupled from safety verification.
 
 ## Database
 

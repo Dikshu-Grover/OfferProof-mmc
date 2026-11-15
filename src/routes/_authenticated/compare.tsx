@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { AlertOctagon, Check, Loader2, Pencil, Save } from "lucide-react";
+import { AlertOctagon, Loader2, Pencil, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -202,63 +202,6 @@ function Compare() {
               {n}
             </p>
           ))}
-          <section>
-            <h2 className="text-xl font-semibold">Career fit</h2>
-            <div className="mt-4 overflow-x-auto rounded-xl border bg-card">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="p-3 text-left text-xs text-muted-foreground">Criterion</th>
-                    {rows.map((o) => (
-                      <th key={o.id} className="p-3 text-left font-semibold">
-                        {o.title}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.career.map((r) => (
-                    <tr key={r.key} className="border-b last:border-0 align-top">
-                      <td className="p-3 font-medium">
-                        {r.label}
-                        {r.note && (
-                          <p className="mt-1 text-xs font-normal text-muted-foreground">{r.note}</p>
-                        )}
-                      </td>
-                      {r.values.map((v) => (
-                        <td
-                          key={v.id}
-                          className={`p-3 ${v.missing ? "italic text-muted-foreground" : ""}`}
-                        >
-                          {v.display}
-                          {v.best && (
-                            <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-low-soft px-2 py-0.5 text-xs font-semibold text-low">
-                              <Check className="size-3" />
-                              Highest
-                            </span>
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {result.missing.length > 0 && (
-              <div className="mt-4 rounded-xl border bg-card p-4 text-sm">
-                <p className="font-medium">Missing information</p>
-                <ul className="mt-2 space-y-1 text-muted-foreground">
-                  {result.missing.map((m) => (
-                    <li key={m.id}>
-                      <b className="text-foreground">{m.title}:</b> {m.fields.join(", ")}. Ask the
-                      employer or use the edit button to add it.
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </section>
-
           {/* AI Career Advisor powered by NVIDIA Nemotron */}
           <AiCompareAdvisor offers={rows} />
 

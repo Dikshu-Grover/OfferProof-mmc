@@ -64,7 +64,8 @@ OfferProof scans for these patterns using regular-expression-based rules running
 
 - **Save reports** — stored in Supabase under the user's account with Row Level Security
 - **History** — browse all saved offers, reports and comparisons
-- **Compare offers** — side-by-side career fit (salary, benefits, growth, work-life balance) plus safety signals from each saved report
+- **Compare offers** — side-by-side comparison featuring an **AI Career Advisor powered by NVIDIA Nemotron** (analyzing best career fit, balanced pros/cons, salary and career growth insights, recruiter questions, and personalized recommendations) alongside verified safety signals from each offer
+- **AI Career Advisor (NVIDIA Integration)** — multi-offer strategic guidance powered by `nvidia/nemotron-3.5-bolt-e4b` through Supabase Edge Functions, strictly separating career suitability from heuristic offer safety signals
 - **Guest pending queue** — verify an offer as a guest, then sign in and pending offers are imported automatically
 
 ### Scam Awareness Centre

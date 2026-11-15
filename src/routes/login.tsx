@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { Loader2, UserRound } from "lucide-react";
+import { Loader2, MailCheck, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,13 +26,14 @@ export const Route = createFileRoute("/login")({
   component: Login,
 });
 
-function Login() {
+export function Login() {
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
   const target = safeRedirect(redirect);
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [pending, setPending] = useState(0);
@@ -46,32 +47,96 @@ function Login() {
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    if (!/^\S+@\S+\.\S+$/.test(email) || password.length < 8) {
-      toast.error("Enter a valid email and a password of at least 8 characters.");
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+    if (mode === "signin" && password.length < 8) {
+      toast.error("Enter your password (at least 8 characters).");
       return;
     }
     setBusy(true);
     try {
       if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
+        // Use Supabase Email OTP so users can verify directly on this page without opening another tab
+        const { error } = await supabase.auth.signInWithOtp({
+          email: email.trim(),
           options: {
-            emailRedirectTo: `${window.location.origin}/login?redirect=${encodeURIComponent(target)}`,
+            shouldCreateUser: true,
           },
         });
         if (error) throw error;
-        if (!data.session) {
-          setSent(true);
-          return;
-        }
+        setSent(true);
+        toast.success("Verification code sent to your email!");
+        return;
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
         if (error) throw error;
+        navigate({ to: target, replace: true });
       }
-      navigate({ to: target, replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleVerifyOtp(e: FormEvent) {
+    e.preventDefault();
+    const token = otp.trim();
+    if (token.length < 4) {
+      toast.error("Please enter the verification code sent to your email.");
+      return;
+    }
+    setBusy(true);
+    try {
+      let { error } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token,
+        type: "email",
+      });
+
+      if (error && (error.message.includes("type") || error.message.includes("invalid"))) {
+        const fallback = await supabase.auth.verifyOtp({
+          email: email.trim(),
+          token,
+          type: "signup",
+        });
+        if (!fallback.error) {
+          error = null;
+        }
+      }
+
+      if (error) throw error;
+
+      // If user supplied a password during signup, persist it so they can use password login in the future
+      if (password && password.length >= 8) {
+        await supabase.auth.updateUser({ password }).catch(() => {});
+      }
+
+      toast.success("Email verified! Welcome to OfferProof.");
+      navigate({ to: target, replace: true });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Invalid or expired verification code.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resendOtp() {
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: { shouldCreateUser: true },
+      });
+      if (error) throw error;
+      toast.success("A new verification code has been sent.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to resend code.");
     } finally {
       setBusy(false);
     }
@@ -94,15 +159,63 @@ function Login() {
           </p>
         )}
         {sent ? (
-          <div className="mt-6 rounded-lg border p-4 text-center text-sm">
-            Check <b>{email}</b> for a confirmation link. After confirming you'll come back here and
-            your offers will be kept.
+          <div className="mt-6 space-y-4">
+            <div className="rounded-xl border bg-muted/40 p-4 text-center">
+              <MailCheck className="mx-auto size-7 text-primary mb-1.5" />
+              <p className="text-sm font-semibold text-foreground">Verify your email</p>
+              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                Enter the verification code sent to <b>{email}</b> to complete your signup directly
+                here. No need to open another tab.
+              </p>
+            </div>
+            <form onSubmit={handleVerifyOtp} className="space-y-3">
+              <Input
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="Enter verification code"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                aria-label="Verification code"
+                maxLength={10}
+                className="text-center font-mono text-base tracking-widest"
+                autoFocus
+              />
+              <Button type="submit" className="w-full" disabled={busy || otp.trim().length < 4}>
+                {busy && <Loader2 className="size-4 animate-spin" />}
+                Verify & Continue
+              </Button>
+            </form>
+            <div className="flex items-center justify-between text-xs pt-1">
+              <button
+                type="button"
+                onClick={resendOtp}
+                disabled={busy}
+                className="text-primary hover:underline disabled:text-muted-foreground"
+              >
+                Resend code
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSent(false);
+                  setOtp("");
+                }}
+                className="text-muted-foreground hover:text-foreground hover:underline"
+              >
+                Change email
+              </button>
+            </div>
           </div>
         ) : (
           <>
             <Tabs
               value={mode}
-              onValueChange={(v) => setMode(v as "signin" | "signup")}
+              onValueChange={(v) => {
+                setMode(v as "signin" | "signup");
+                setSent(false);
+                setOtp("");
+              }}
               className="mt-6"
             >
               <TabsList className="grid w-full grid-cols-2">
@@ -123,7 +236,11 @@ function Login() {
               <Input
                 type="password"
                 autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                placeholder="Password (8+ characters)"
+                placeholder={
+                  mode === "signup"
+                    ? "Password (optional or 8+ characters)"
+                    : "Password (8+ characters)"
+                }
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 aria-label="Password"
@@ -131,7 +248,7 @@ function Login() {
               />
               <Button type="submit" className="w-full" disabled={busy}>
                 {busy && <Loader2 className="size-4 animate-spin" />}
-                {mode === "signin" ? "Sign in" : "Create account"}
+                {mode === "signin" ? "Sign in" : "Send verification code"}
               </Button>
             </form>
           </>

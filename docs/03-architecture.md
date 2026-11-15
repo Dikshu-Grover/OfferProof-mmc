@@ -13,6 +13,7 @@ flowchart TD
 
     AUTH_ROUTE --> HISTORY["history.tsx\n(offers, reports, comparisons)"]
     AUTH_ROUTE --> COMPARE["compare.tsx\n(side-by-side comparison)"]
+    COMPARE --> AI_ADVISOR["AiCompareAdvisor.tsx\n(NVIDIA Career Advisor)"]
     AUTH_ROUTE --> REPORT_VIEW["reports.$id.tsx\n(view saved report)"]
 
     VERIFY --> UPLOAD["UploadEvidence.tsx\n(PDF.js / Tesseract)"]

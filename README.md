@@ -108,9 +108,10 @@ OfferProof scans employment offers, appointment letters, and communication scree
 
 - **Client-side verification engine.** Evaluates text against 11 rule-based heuristics in milliseconds and classifies results as _Low Concern_, _Needs Review_, or _High Concern_.
 - **In-browser document and OCR extraction.** Extracts text locally from PDFs (up to 20 pages, via PDF.js in a Web Worker) and from images or screenshots (via Tesseract.js in a Web Worker).
-- **NVIDIA AI advisory guidance.** Generates structured _Verification Steps_, _Recruiter Questions_, and _Important Precautions_ through the `nvidia/nemotron-3.5-bolt-e4b` model, called from a Supabase Edge Function.
+- **NVIDIA AI advisory guidance & intelligent extraction.** Generates structured _Verification Steps_, _Recruiter Questions_, and _Important Precautions_ through the `nvidia/nemotron-3.5-bolt-e4b` model, called from a Supabase Edge Function. Also powers intelligent document field extraction with verbatim evidence quotes.
+- **AI Career Advisor (powered by NVIDIA Nemotron).** When comparing multiple job offers on `/compare`, candidates receive tailored fit recommendations, balanced pros and cons, salary and career growth insights, and recruiter questions based on candidate priorities and career goals.
 - **Real threat analytics.** The Scam Awareness Centre queries Google BigQuery (`offerproof_analytics.job_postings`, about 17,880 records) so users can explore fraudulent versus legitimate postings with instant filtering.
-- **Side-by-side offer comparison.** Authenticated users can compare offers across annualized compensation, benefits, work mode, career growth, and safety signals.
+- **Side-by-side offer comparison.** Authenticated users can compare offers side by side with AI-assisted career fit analysis and safety signals from each saved verification report.
 - **Session isolation.** Strict `sessionStorage` scoping ensures concurrent users or tabs never overwrite each other's offer text or verification state.
 
 ---
@@ -159,6 +160,7 @@ flowchart TD
 
     AUTH_ROUTE --> HISTORY["history.tsx\n(offers, reports, comparisons)"]
     AUTH_ROUTE --> COMPARE["compare.tsx\n(side-by-side comparison)"]
+    COMPARE --> AI_ADVISOR["AiCompareAdvisor.tsx\n(NVIDIA Career Advisor)"]
     AUTH_ROUTE --> REPORT_VIEW["reports.$id.tsx\n(view saved report)"]
 
     VERIFY --> UPLOAD["UploadEvidence.tsx\n(PDF.js / Tesseract)"]
@@ -211,14 +213,27 @@ OfferProof uses **Google Cloud BigQuery** as its threat-intelligence data layer.
 
 ## 9. NVIDIA Integration
 
-OfferProof uses **NVIDIA's hosted inference API** with the model **`nvidia/nemotron-3.5-bolt-e4b`** to generate advisory guidance.
+OfferProof integrates **NVIDIA's hosted inference API** with the model **`nvidia/nemotron-3.5-bolt-e4b`** across two key features:
 
-- **Access pattern:** the `offerproof-ai-recommendations` Supabase Edge Function (Deno) calls the NVIDIA chat-completion endpoint using a server-side API key (`NVIDIA_API_KEY`).
-- **Output:** a structured JSON response parsed into three sections: _Verification Steps_, _Recruiter Questions_, and _Important Precautions_.
-- **Role of AI:** advisory only. The risk classification comes from the deterministic rule engine, so the verdict is reproducible and testable, and AI output never overrides it.
-- **Asynchronous by design:** AI guidance loads after the rule-based results appear, so users get an immediate answer even if the AI call is slow or unavailable.
+### 1. Single-Offer Verification Advisory & Intelligent Extraction
 
-See [`docs/06-ai-integration.md`](./docs/06-ai-integration.md) for prompt design and response parsing.
+- **Access pattern:** the `offerproof-ai-recommendations` Supabase Edge Function (Deno) calls the NVIDIA chat-completion endpoint using the server-side `NVIDIA_API_KEY` secret.
+- **Output:** structured guidance parsed into three sections: _Verification Steps_, _Recruiter Questions_, and _Important Precautions_. It also powers intelligent field extraction with exact supporting quotes verified against the original offer text.
+- **Role of AI:** advisory only. Risk classification comes entirely from the deterministic rule engine so verdicts are reproducible and testable; AI output never overrides it.
+- **Asynchronous & non-blocking:** AI guidance loads after rule-based results appear, so users get an immediate answer even if external inference is slow.
+
+### 2. AI Career Advisor (Multi-Offer Comparison)
+
+- **Component:** `src/components/compare/AiCompareAdvisor.tsx` on the `/compare` route.
+- **Capabilities:** analyzes multiple job offers side by side based on candidate priorities and goals to generate:
+  - **Best Career Fit**: Decisive recommendation on the overall strongest option.
+  - **Comparison Summary & Pros/Cons**: Objective breakdown of each offer's trade-offs.
+  - **Salary & Career Growth Insights**: Analysis of compensation, purchasing power, and growth trajectory.
+  - **Missing Information & Recruiter Questions**: Unresolved ambiguities and questions for recruiters.
+  - **Personalized Recommendations**: Concrete negotiation and decision-making steps.
+- **Safety separation:** career fit is strictly decoupled from offer safety; AI models never declare an offer genuine or fraudulent.
+
+See [`docs/06-ai-integration.md`](./docs/06-ai-integration.md) for full architecture and prompt designs.
 
 ---
 
@@ -248,20 +263,20 @@ Full rule specifications, including regex signatures and negation-clause handlin
 
 ## 11. Technology Stack
 
-| Domain                  | Technology                        | Purpose                                                |
-| ----------------------- | --------------------------------- | ------------------------------------------------------ |
-| Frontend framework      | React 19, TanStack Start          | Full-stack SSR and modern React architecture           |
-| Routing                 | TanStack Router                   | Type-safe, file-based routing                          |
-| Data fetching           | TanStack Query 5                  | Server-state caching and async mutations               |
-| Styling                 | Tailwind CSS v4, shadcn/ui        | Design tokens, light/dark theme, accessible components |
-| 3D graphics             | Three.js, @react-three/fiber      | Interactive landing-page scene                         |
-| Document processing     | PDF.js, Tesseract.js              | In-browser PDF extraction and OCR via Web Workers      |
-| Backend and database    | Supabase (PostgreSQL)             | Managed database with owner-only Row Level Security    |
-| Serverless functions    | Supabase Edge Functions (Deno)    | Secure mediation of NVIDIA and BigQuery calls          |
-| Artificial intelligence | NVIDIA Nemotron 3.5               | `nvidia/nemotron-3.5-bolt-e4b` advisory guidance       |
-| Threat intelligence     | Google Cloud BigQuery             | `offerproof_analytics.job_postings` analytics          |
-| Testing                 | Vitest, Testing Library           | 11 suites covering rules, session isolation, and UI    |
-| Runtime and deployment  | Nitro (Cloudflare Workers target) | Edge-compatible production build                       |
+| Domain                  | Technology                        | Purpose                                                                                                |
+| ----------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Frontend framework      | React 19, TanStack Start          | Full-stack SSR and modern React architecture                                                           |
+| Routing                 | TanStack Router                   | Type-safe, file-based routing                                                                          |
+| Data fetching           | TanStack Query 5                  | Server-state caching and async mutations                                                               |
+| Styling                 | Tailwind CSS v4, shadcn/ui        | Design tokens, light/dark theme, accessible components                                                 |
+| 3D graphics             | Three.js, @react-three/fiber      | Interactive landing-page scene                                                                         |
+| Document processing     | PDF.js, Tesseract.js              | In-browser PDF extraction and OCR via Web Workers                                                      |
+| Backend and database    | Supabase (PostgreSQL)             | Managed database with owner-only Row Level Security                                                    |
+| Serverless functions    | Supabase Edge Functions (Deno)    | Secure mediation of NVIDIA and BigQuery calls                                                          |
+| Artificial intelligence | NVIDIA Nemotron 3.5               | `nvidia/nemotron-3.5-bolt-e4b` advisory recommendations, intelligent extraction, and AI Career Advisor |
+| Threat intelligence     | Google Cloud BigQuery             | `offerproof_analytics.job_postings` analytics                                                          |
+| Testing                 | Vitest, Testing Library           | 14 suites covering rules, session isolation, extraction, and UI                                        |
+| Runtime and deployment  | Nitro (Cloudflare Workers target) | Edge-compatible production build                                                                       |
 
 ---
 

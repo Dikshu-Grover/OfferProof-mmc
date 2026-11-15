@@ -116,18 +116,19 @@ Edge Functions run as Deno processes on Supabase's infrastructure. They are the 
 
 ### `offerproof-ai-recommendations`
 
-| Property | Value                                                    |
-| -------- | -------------------------------------------------------- |
-| Runtime  | Deno                                                     |
-| Trigger  | `POST /functions/v1/offerproof-ai-recommendations`       |
-| Auth     | Supabase JWT (attached by `supabase.functions.invoke()`) |
-| Secret   | `NVIDIA_API_KEY`                                         |
-| Timeout  | 25 seconds (AbortController)                             |
+| Property | Value                                                                                               |
+| -------- | --------------------------------------------------------------------------------------------------- |
+| Runtime  | Deno                                                                                                |
+| Trigger  | `POST /functions/v1/offerproof-ai-recommendations`                                                  |
+| Auth     | Supabase JWT (attached by `supabase.functions.invoke()`)                                            |
+| Secret   | `NVIDIA_API_KEY`                                                                                    |
+| Timeout  | 25 seconds (AbortController)                                                                        |
+| Modes    | `single` (Verification Advisory), `extract` (Intelligent Extraction), `compare` (AI Career Advisor) |
 
 **Data flow:**
 
 ```
-Client → Supabase Edge → NVIDIA API → Client
+Client → Supabase Edge → NVIDIA API (`nvidia/nemotron-3.5-bolt-e4b`) → Client
 ```
 
 **CORS:** All origins allowed (`Access-Control-Allow-Origin: *`). `OPTIONS` preflight returns `200 ok`.
