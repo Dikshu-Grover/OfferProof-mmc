@@ -445,6 +445,6 @@ Each member's commits, pull requests, and reviews are recorded in the repository
 
 ## 20. License
 
-This project is open-source and available under the terms of the [MIT License](./LICENSE).
+This project is open-source and available under the terms of the [MIT License](LICENSE).
 
 Copyright (c) 2026 Team OfferProof.
