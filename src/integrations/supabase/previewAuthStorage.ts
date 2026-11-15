@@ -65,7 +65,7 @@ export function brokeredPreviewStorage(): PreviewAuthStorage | undefined {
   // detached frame has no parent and not every browser implements ancestorOrigins.
   const parentWindow = window.parent as Window | null;
   const framed = parentWindow !== null && parentWindow !== window;
-  if (!projectId || !framed) return localStorage;
+  if (!projectId || !framed) return sessionStorage;
 
   // Post only to the real editor ancestor, validated as a Lovable origin, so the
   // session token can never reach an untrusted embedder.
@@ -121,7 +121,7 @@ export function brokeredPreviewStorage(): PreviewAuthStorage | undefined {
   // Blocked third-party storage throws here; seeding must not break broker reads.
   const readLocal = (key: string): string | null | undefined => {
     try {
-      return localStorage.getItem(key);
+      return sessionStorage.getItem(key);
     } catch {
       return undefined;
     }
@@ -141,33 +141,33 @@ export function brokeredPreviewStorage(): PreviewAuthStorage | undefined {
       // the broker later goes silent. A null value means never-synced -> keep local.
       if (res?.ok && res.value !== null) {
         if (res.value === "") {
-          if (local !== undefined && readLocal(key) === local) localStorage.removeItem(key);
+          if (local !== undefined && readLocal(key) === local) sessionStorage.removeItem(key);
           return null;
         }
         // Seed this origin so a new tab, whose editor holds no session, stays signed in.
         if (local === null && readLocal(key) === null) {
           try {
-            localStorage.setItem(key, res.value);
+            sessionStorage.setItem(key, res.value);
           } catch {
             /* storage full: still return the editor's session */
           }
         }
         return res.value;
       }
-      return localStorage.getItem(key);
+      return sessionStorage.getItem(key);
     },
     setItem: (key, value) => {
-      localStorage.setItem(key, value);
+      sessionStorage.setItem(key, value);
       return request("lovable-preview-auth:set", key, value).then((res) => {
-        if (res?.ok && res.value !== null && localStorage.getItem(key) === value) {
-          if (res.value === "") localStorage.removeItem(key);
-          else localStorage.setItem(key, res.value);
+        if (res?.ok && res.value !== null && sessionStorage.getItem(key) === value) {
+          if (res.value === "") sessionStorage.removeItem(key);
+          else sessionStorage.setItem(key, res.value);
         }
       });
     },
     removeItem: (key) => {
       const local = readLocal(key);
-      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
       return request("lovable-preview-auth:remove", key, local ?? undefined).then(() => {});
     },
   };

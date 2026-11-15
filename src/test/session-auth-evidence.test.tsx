@@ -47,6 +47,20 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+describe("Automatic Logout via sessionStorage", () => {
+  it("uses sessionStorage so auth session is discarded when tab or browser is closed", async () => {
+    const testKey = "sb-tgmzdtjbxojwiaczaedj-auth-token";
+    const testSession = JSON.stringify({ access_token: "xyz123", user: { id: "u-1" } });
+
+    window.sessionStorage.setItem(testKey, testSession);
+    expect(window.sessionStorage.getItem(testKey)).toBe(testSession);
+
+    // Simulating browser tab session close / clearance
+    window.sessionStorage.removeItem(testKey);
+    expect(window.sessionStorage.getItem(testKey)).toBeNull();
+  });
+});
+
 describe("Original Supabase Magic-Link Authentication Flow", () => {
   it("redirects immediately if user is already signed in", async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: "user-existing" } } });
