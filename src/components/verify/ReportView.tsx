@@ -322,6 +322,10 @@ export function ReportView({
                 </p>
 
                 {(() => {
+                  // "Missing key details" represents absent fields (not phrases found in the document).
+                  // Do not show a "View Evidence" dropdown for missing details.
+                  if (f.id === "missing_details") return null;
+
                   const visibleEvidence = f.evidence
                     .map((e) => e.replace(/^(?:Not found:\s*|Not found\b\s*)/i, "").trim())
                     .filter((e) => e.length > 0 && e.toLowerCase() !== "not found");

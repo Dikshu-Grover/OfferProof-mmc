@@ -325,12 +325,17 @@ describe("Improvement 3: Highlighted Evidence dropdown", () => {
     expect(screen.getByText("View Evidence (1)")).toBeInTheDocument();
   });
 
-  it("does not show 'Not found' in the view evidence under warning signals", async () => {
+  it("does not show View Evidence or missing field labels for 'Missing key details'", async () => {
     const mockFindingWithNotFound: Finding = {
       id: "missing_details",
       name: "Missing key details",
       severity: "medium",
-      evidence: ["Not found: Company name", "Not found: Salary / stipend"],
+      evidence: [
+        "Not found: Company name",
+        "Not found: Salary / stipend",
+        "Not found: Job title",
+        "Not found: Contact details",
+      ],
       explanation:
         "Formal offers normally state the employer, role, pay, location and contact details.",
       action: "Ask the recruiter for a formal offer letter.",
@@ -343,7 +348,7 @@ describe("Improvement 3: Highlighted Evidence dropdown", () => {
       extracted: {
         company: null,
         recruiter: null,
-        jobTitle: "Software Intern",
+        jobTitle: null,
         salary: null,
         joiningDate: null,
         location: null,
@@ -355,25 +360,21 @@ describe("Improvement 3: Highlighted Evidence dropdown", () => {
       phrases: [],
     };
 
-    render(
-      <ReportView
-        report={mockReport}
-        text="We offer you Software Intern position."
-        onReset={() => {}}
-      />,
-    );
+    render(<ReportView report={mockReport} text="We offer you a position." onReset={() => {}} />);
 
-    // Click to expand evidence for Missing key details
-    const viewEvidenceBtn = screen.getByRole("button", {
-      name: "View evidence for Missing key details",
-    });
-    expect(viewEvidenceBtn).toBeInTheDocument();
-    fireEvent.click(viewEvidenceBtn);
+    // Verify warning is displayed
+    expect(screen.getByText("Missing key details")).toBeInTheDocument();
 
-    // Verify 'Not found' does NOT appear in the expanded evidence container
+    // Verify 'View evidence' dropdown is NOT rendered for missing details
+    expect(
+      screen.queryByRole("button", {
+        name: "View evidence for Missing key details",
+      }),
+    ).toBeNull();
+
+    // Verify missing field labels ('Job title', 'Contact details', 'Not found') are NOT rendered as evidence
+    expect(screen.queryByText("Job title")).toBeNull();
+    expect(screen.queryByText("Contact details")).toBeNull();
     expect(screen.queryByText(/Not found/i)).toBeNull();
-    // Verify the clean field names are displayed
-    expect(screen.getByText("Company name")).toBeInTheDocument();
-    expect(screen.getByText("Salary / stipend")).toBeInTheDocument();
   });
 });
