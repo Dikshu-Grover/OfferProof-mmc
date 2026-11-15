@@ -1,37 +1,17 @@
-import { act, fireEvent, render, screen, cleanup, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, cleanup, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 // Mock Supabase
 const mockSignUp = vi.fn();
 const mockSignInWithPassword = vi.fn();
-const mockResend = vi.fn();
 const mockGetUser = vi.fn();
-const mockGetSession = vi.fn();
-const mockSetSession = vi.fn();
-let authChangeCallback: ((event: string, session: unknown) => void) | null = null;
-
-const mockOnAuthStateChange = vi.fn((cb) => {
-  authChangeCallback = cb;
-  return {
-    data: {
-      subscription: {
-        unsubscribe: vi.fn(),
-      },
-    },
-  };
-});
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
       signUp: (...args: unknown[]) => mockSignUp(...args),
       signInWithPassword: (...args: unknown[]) => mockSignInWithPassword(...args),
-      resend: (...args: unknown[]) => mockResend(...args),
       getUser: () => mockGetUser(),
-      getSession: () => mockGetSession(),
-      setSession: (...args: unknown[]) => mockSetSession(...args),
-      onAuthStateChange: (cb: (event: string, session: unknown) => void) =>
-        mockOnAuthStateChange(cb),
     },
     functions: {
       invoke: vi.fn().mockResolvedValue({ data: { recommendations: "Tips" }, error: null }),
@@ -58,162 +38,110 @@ vi.mock("sonner", () => ({
   },
 }));
 
-import { Login, maskEmail } from "@/routes/login";
+import { Login } from "@/routes/login";
 import { ReportView, getEvidenceSnippet } from "@/components/verify/ReportView";
 import type { Finding, Report } from "@/lib/verify/engine";
 
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
-  authChangeCallback = null;
 });
 
-describe("Improvement 1: Automatic Logout via sessionStorage", () => {
-  it("uses sessionStorage in the browser environment so session is discarded when browser is closed", async () => {
-    const testKey = "sb-tgmzdtjbxojwiaczaedj-auth-token";
-    const testSession = JSON.stringify({ access_token: "xyz123", user: { id: "u-1" } });
+describe("Original Supabase Magic-Link Authentication Flow", () => {
+  it("redirects immediately if user is already signed in", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-existing" } } });
 
-    window.sessionStorage.setItem(testKey, testSession);
-    expect(window.sessionStorage.getItem(testKey)).toBe(testSession);
+    render(<Login />);
 
-    window.sessionStorage.removeItem(testKey);
-    expect(window.sessionStorage.getItem(testKey)).toBeNull();
-  });
-});
-
-describe("3-Stage Registration & Magic Link Verification Flow", () => {
-  it("maskEmail correctly masks the email address for privacy", () => {
-    expect(maskEmail("alex.hunter@example.com")).toBe("a***r@example.com");
-    expect(maskEmail("john@test.org")).toBe("j***n@test.org");
-    expect(maskEmail("ab@test.org")).toBe("a***@test.org");
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/verify", replace: true });
+    });
   });
 
-  it("Stage 1 & 2: Submits full registration, requests Supabase magic confirmation link, and displays 'Check your inbox' screen with masked email", async () => {
+  it("handles user sign-in with email and password", async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
-    mockGetSession.mockResolvedValue({ data: { session: null } });
+    mockSignInWithPassword.mockResolvedValue({ data: { session: {} }, error: null });
+
+    render(<Login />);
+
+    expect(screen.getByRole("heading", { name: "Welcome back" })).toBeInTheDocument();
+
+    const emailInput = screen.getByLabelText("Email");
+    const passwordInput = screen.getByLabelText("Password");
+    const submitBtn = screen.getByRole("button", { name: "Sign in" });
+
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockSignInWithPassword).toHaveBeenCalledWith({
+        email: "test@example.com",
+        password: "password123",
+      });
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/verify", replace: true });
+    });
+  });
+
+  it("handles user signup with magic confirmation link", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
     mockSignUp.mockResolvedValue({
-      data: { user: { id: "user-123" }, session: null },
+      data: { user: { id: "user-new" }, session: null },
       error: null,
     });
 
     render(<Login />);
 
-    // Stage 1: Registration form
-    expect(screen.getByRole("heading", { name: "Create your account" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Full Name")).toBeInTheDocument();
-    expect(screen.getByLabelText("Email address")).toBeInTheDocument();
-    expect(screen.getByLabelText("Password")).toBeInTheDocument();
-    expect(screen.getByLabelText("Confirm Password")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Create Account" })).toBeInTheDocument();
+    // Switch to Sign up tab
+    const signUpTab = screen.getByRole("tab", { name: "Sign up" });
+    fireEvent.keyDown(signUpTab, { key: "Enter", code: "Enter", charCode: 13 });
+    fireEvent.click(signUpTab);
 
-    // Fill form
-    fireEvent.change(screen.getByLabelText("Full Name"), { target: { value: "Alex Hunter" } });
-    fireEvent.change(screen.getByLabelText("Email address"), {
-      target: { value: "alex.hunter@example.com" },
-    });
-    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "securePassword123" } });
-    fireEvent.change(screen.getByLabelText("Confirm Password"), {
-      target: { value: "securePassword123" },
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Create your account" })).toBeInTheDocument();
     });
 
-    // Submit registration
-    fireEvent.click(screen.getByRole("button", { name: "Create Account" }));
+    const emailInput = screen.getByLabelText("Email");
+    const passwordInput = screen.getByLabelText("Password");
+    const submitBtn = screen.getByRole("button", { name: "Create account" });
+
+    fireEvent.change(emailInput, { target: { value: "newuser@example.com" } });
+    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    fireEvent.click(submitBtn);
 
     await waitFor(() => {
       expect(mockSignUp).toHaveBeenCalledWith({
-        email: "alex.hunter@example.com",
-        password: "securePassword123",
+        email: "newuser@example.com",
+        password: "password123",
         options: {
-          data: { full_name: "Alex Hunter" },
           emailRedirectTo: expect.stringContaining("/login?redirect=%2Fverify"),
         },
       });
     });
 
-    // Stage 2: Check your inbox screen is displayed
+    // Confirmation message shown
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Check your inbox" })).toBeInTheDocument();
-      expect(screen.getByText("a***r@example.com")).toBeInTheDocument();
-      expect(
-        screen.getByText(/We sent a Supabase magic confirmation link to activate your account/i),
-      ).toBeInTheDocument();
-      expect(screen.getByText(/Return to this OfferProof tab/i)).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /Resend email/i })).toBeInTheDocument();
-      expect(screen.getByText(/Entered wrong email\? Change it/i)).toBeInTheDocument();
+      expect(screen.getByText("newuser@example.com")).toBeInTheDocument();
+      expect(screen.getByText(/for a confirmation link/)).toBeInTheDocument();
     });
   });
 
-  it("Stage 3: Automatically detects verification via auth state change and transitions to email-verified success state", async () => {
+  it("validates email format and minimum password length", async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
-    mockGetSession.mockResolvedValue({ data: { session: null } });
-    mockSignUp.mockResolvedValue({
-      data: { user: { id: "user-456" }, session: null },
-      error: null,
-    });
 
     render(<Login />);
 
-    // Register
-    fireEvent.change(screen.getByLabelText("Full Name"), { target: { value: "Sarah Connor" } });
-    fireEvent.change(screen.getByLabelText("Email address"), {
-      target: { value: "sarah@cyberdyne.com" },
-    });
-    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "futureisnow88" } });
-    fireEvent.change(screen.getByLabelText("Confirm Password"), {
-      target: { value: "futureisnow88" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Create Account" }));
+    const emailInput = screen.getByLabelText("Email");
+    const passwordInput = screen.getByLabelText("Password");
+    const submitBtn = screen.getByRole("button", { name: "Sign in" });
 
-    // Reaches verification stage
-    await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Check your inbox" })).toBeInTheDocument();
-    });
+    // Invalid email and short password
+    fireEvent.change(emailInput, { target: { value: "invalid-email" } });
+    fireEvent.change(passwordInput, { target: { value: "short" } });
+    fireEvent.click(submitBtn);
 
-    // Simulate cross-tab / email magic-link click triggering Supabase auth state change
-    act(() => {
-      if (authChangeCallback) {
-        authChangeCallback("SIGNED_IN", {
-          user: { id: "user-456", email: "sarah@cyberdyne.com" },
-          access_token: "mock_jwt_token",
-          refresh_token: "mock_refresh",
-        });
-      }
-    });
-
-    // Stage 3 Success state is rendered automatically
-    await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Email verified!" })).toBeInTheDocument();
-      expect(screen.getByText(/Your account is confirmed and ready/i)).toBeInTheDocument();
-    });
-  });
-
-  it("resend email calls Supabase resend with signup type and activates cooldown", async () => {
-    mockGetUser.mockResolvedValue({ data: { user: null } });
-    mockGetSession.mockResolvedValue({ data: { session: null } });
-    mockSignUp.mockResolvedValue({
-      data: { user: { id: "user-789" }, session: null },
-      error: null,
-    });
-    mockResend.mockResolvedValue({ data: {}, error: null });
-
-    render(<Login />);
-
-    fireEvent.change(screen.getByLabelText("Full Name"), { target: { value: "John Doe" } });
-    fireEvent.change(screen.getByLabelText("Email address"), {
-      target: { value: "john.doe@example.com" },
-    });
-    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password123" } });
-    fireEvent.change(screen.getByLabelText("Confirm Password"), {
-      target: { value: "password123" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Create Account" }));
-
-    await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Check your inbox" })).toBeInTheDocument();
-    });
-
-    const resendBtn = screen.getByRole("button", { name: /Resend email/i });
-    expect(resendBtn).toBeDisabled(); // cooldown active
+    expect(mockSignInWithPassword).not.toHaveBeenCalled();
+    expect(mockSignUp).not.toHaveBeenCalled();
   });
 });
 
