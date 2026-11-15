@@ -80,6 +80,6 @@ The model is hosted on NVIDIA's inference platform and accessed securely through
 
 | Tool                               | Role                                                                                                                         |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| **Cloudflare Workers** (via Nitro) | Default SSR server deployment target                                                                                         |
+| **Lovable-managed deployment       | Application development and publishing/hosting through Lovable's publishable link                                            |
 | **Supabase CLI**                   | Deploying and managing Edge Functions                                                                                        |
 | **Lovable Cloud**                  | Primary managed hosting platform; `@lovable.dev/vite-tanstack-config` pre-wires the Vite + TanStack + Nitro + Tailwind stack |
