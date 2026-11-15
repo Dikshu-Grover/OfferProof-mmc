@@ -6,7 +6,7 @@
 
 An explainable, privacy-first platform that helps students and job seekers verify job and internship offers before they reply, pay, or share personal information.
 
-*Mentor Me Collective (MMC) BUILD, Fall 2026 · Google Cloud Launchpad Showcase · Team OfferProof*
+_Mentor Me Collective (MMC) BUILD, Fall 2026 · Google Cloud Launchpad Showcase · Team OfferProof_
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
@@ -15,24 +15,22 @@ An explainable, privacy-first platform that helps students and job seekers verif
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%20%2F%20Edge%20Functions-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 [![Google Cloud](https://img.shields.io/badge/Google_Cloud-BigQuery-4285F4?logo=googlecloud&logoColor=white)](https://cloud.google.com/bigquery)
 [![NVIDIA AI](https://img.shields.io/badge/NVIDIA-Nemotron--3.5--bolt--e4b-76B900?logo=nvidia&logoColor=white)](https://build.nvidia.com/)
-[![Tests](https://img.shields.io/badge/Tests-64%20passed%20(11%20suites)-brightgreen?logo=vitest&logoColor=white)](./docs/09-security-and-testing.md)
+[![Tests](<https://img.shields.io/badge/Tests-64%20passed%20(11%20suites)-brightgreen?logo=vitest&logoColor=white>)](./docs/09-security-and-testing.md)
 [![UN SDG 9](https://img.shields.io/badge/UN%20SDG-9%20Industry%2C%20Innovation%20%26%20Infrastructure-F36D25)](https://sdgs.un.org/goals/goal9)
 
 </div>
 
 ---
 
-
 ## Submission Links
 
-| **Deliverable** | **Link** |
-|---|---|
-| Live demo / working product | [Open OfferProof](https://offerproof-mmc.lovable.app/) |
-| Presentation deck (up to 8 slides) | <ADD LINK> |
-| Recorded walkthrough (up to 5 minutes) | <ADD LINK> |
-| Written summary (up to 3 pages) | <ADD LINK> |
-| Team Findings (Google Drive) | [Drive](https://drive.google.com/drive/folders/1Jdwh1QJlVpfTxtblkf1X1PwKmggzAcDd?usp=share_link) |
-
+| **Deliverable**                        | **Link**                                                                                         |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Live demo / working product            | [Open OfferProof](https://offerproof-mmc.lovable.app/)                                           |
+| Presentation deck (up to 8 slides)     | <ADD LINK>                                                                                       |
+| Recorded walkthrough (up to 5 minutes) | <ADD LINK>                                                                                       |
+| Written summary (up to 3 pages)        | <ADD LINK>                                                                                       |
+| Team Findings (Google Drive)           | [Drive](https://drive.google.com/drive/folders/1Jdwh1QJlVpfTxtblkf1X1PwKmggzAcDd?usp=share_link) |
 
 ---
 
@@ -63,7 +61,7 @@ An explainable, privacy-first platform that helps students and job seekers verif
 
 ## 1. Target Audience
 
-OfferProof is built for people who receive an employment message and need a clear answer *before* replying or sharing any information:
+OfferProof is built for people who receive an employment message and need a clear answer _before_ replying or sharing any information:
 
 - **Students and recent graduates** applying for internships and first jobs, who are the most frequent targets of recruitment fraud.
 - **Early-career engineers and career changers** evaluating unfamiliar companies and recruiters.
@@ -108,9 +106,9 @@ OfferProof scans employment offers, appointment letters, and communication scree
 
 ## 5. Key Features
 
-- **Client-side verification engine.** Evaluates text against 11 rule-based heuristics in milliseconds and classifies results as *Low Concern*, *Needs Review*, or *High Concern*.
+- **Client-side verification engine.** Evaluates text against 11 rule-based heuristics in milliseconds and classifies results as _Low Concern_, _Needs Review_, or _High Concern_.
 - **In-browser document and OCR extraction.** Extracts text locally from PDFs (up to 20 pages, via PDF.js in a Web Worker) and from images or screenshots (via Tesseract.js in a Web Worker).
-- **NVIDIA AI advisory guidance.** Generates structured *Verification Steps*, *Recruiter Questions*, and *Important Precautions* through the `nvidia/nemotron-3.5-bolt-e4b` model, called from a Supabase Edge Function.
+- **NVIDIA AI advisory guidance.** Generates structured _Verification Steps_, _Recruiter Questions_, and _Important Precautions_ through the `nvidia/nemotron-3.5-bolt-e4b` model, called from a Supabase Edge Function.
 - **Real threat analytics.** The Scam Awareness Centre queries Google BigQuery (`offerproof_analytics.job_postings`, about 17,880 records) so users can explore fraudulent versus legitimate postings with instant filtering.
 - **Side-by-side offer comparison.** Authenticated users can compare offers across annualized compensation, benefits, work mode, career growth, and safety signals.
 - **Session isolation.** Strict `sessionStorage` scoping ensures concurrent users or tabs never overwrite each other's offer text or verification state.
@@ -147,7 +145,6 @@ OfferProof scans employment offers, appointment letters, and communication scree
 ## 7. System Architecture
 
 # System Architecture
-
 
 ## Component Map
 
@@ -217,7 +214,7 @@ OfferProof uses **Google Cloud BigQuery** as its threat-intelligence data layer.
 OfferProof uses **NVIDIA's hosted inference API** with the model **`nvidia/nemotron-3.5-bolt-e4b`** to generate advisory guidance.
 
 - **Access pattern:** the `offerproof-ai-recommendations` Supabase Edge Function (Deno) calls the NVIDIA chat-completion endpoint using a server-side API key (`NVIDIA_API_KEY`).
-- **Output:** a structured JSON response parsed into three sections: *Verification Steps*, *Recruiter Questions*, and *Important Precautions*.
+- **Output:** a structured JSON response parsed into three sections: _Verification Steps_, _Recruiter Questions_, and _Important Precautions_.
 - **Role of AI:** advisory only. The risk classification comes from the deterministic rule engine, so the verdict is reproducible and testable, and AI output never overrides it.
 - **Asynchronous by design:** AI guidance loads after the rule-based results appear, so users get an immediate answer even if the AI call is slow or unavailable.
 
@@ -229,19 +226,19 @@ See [`docs/06-ai-integration.md`](./docs/06-ai-integration.md) for prompt design
 
 The core engine ([`src/lib/verify/engine.ts`](./src/lib/verify/engine.ts)) evaluates offers against 11 rules.
 
-| ID | Finding | Severity | Points | Trigger |
-|---|---|:---:|:---:|---|
-| `payment_request` | Payment or fee requested | High | 6 | Requests registration, security, or processing deposits |
-| `training_payment` | Training or equipment payment | High | 6 | Requires candidates to pay for training, laptops, or badges |
-| `cheque_fraud` | Potential cheque fraud | High | 6 | Cheque deposit paired with an instruction to forward funds |
-| `sensitive_info` | Sensitive information requested | High / Medium | 6 / 3 | OTPs, PINs, banking credentials (High); Aadhaar or PAN (Medium) |
-| `personal_email` | Recruiter uses free email | Medium | 3 | Recruiter address uses Gmail, Yahoo, Outlook, Proton, etc. |
-| `domain_mismatch` | Domain and company mismatch | Medium | 3 | Sender domain does not match the extracted company name |
-| `suspicious_links` | Suspicious links | Medium | 3 | URL shorteners, bare IP addresses, HTTP, or risky TLDs |
-| `unrealistic_pay` | Unrealistic promises | Medium | 3 | High daily income, "no interview needed", guaranteed money |
-| `urgency` | Urgency or pressure language | Medium / Low | 3 / 1 | "Reply within 24 hours", "limited slots", and similar |
-| `missing_details` | Missing key details | Medium / Low | 3 / 1 | Company, role, salary, location, or contacts are absent |
-| `multiple_domains` | Multiple sender domains | Low | 1 | Emails come from conflicting root domains |
+| ID                 | Finding                         |   Severity    | Points | Trigger                                                         |
+| ------------------ | ------------------------------- | :-----------: | :----: | --------------------------------------------------------------- |
+| `payment_request`  | Payment or fee requested        |     High      |   6    | Requests registration, security, or processing deposits         |
+| `training_payment` | Training or equipment payment   |     High      |   6    | Requires candidates to pay for training, laptops, or badges     |
+| `cheque_fraud`     | Potential cheque fraud          |     High      |   6    | Cheque deposit paired with an instruction to forward funds      |
+| `sensitive_info`   | Sensitive information requested | High / Medium | 6 / 3  | OTPs, PINs, banking credentials (High); Aadhaar or PAN (Medium) |
+| `personal_email`   | Recruiter uses free email       |    Medium     |   3    | Recruiter address uses Gmail, Yahoo, Outlook, Proton, etc.      |
+| `domain_mismatch`  | Domain and company mismatch     |    Medium     |   3    | Sender domain does not match the extracted company name         |
+| `suspicious_links` | Suspicious links                |    Medium     |   3    | URL shorteners, bare IP addresses, HTTP, or risky TLDs          |
+| `unrealistic_pay`  | Unrealistic promises            |    Medium     |   3    | High daily income, "no interview needed", guaranteed money      |
+| `urgency`          | Urgency or pressure language    | Medium / Low  | 3 / 1  | "Reply within 24 hours", "limited slots", and similar           |
+| `missing_details`  | Missing key details             | Medium / Low  | 3 / 1  | Company, role, salary, location, or contacts are absent         |
+| `multiple_domains` | Multiple sender domains         |      Low      |   1    | Emails come from conflicting root domains                       |
 
 **Scoring.** Any High-severity signal, or a total of 8 or more points, yields **High Concern**. A total of 3 to 7 points yields **Needs Review**. A total of 0 to 2 points yields **Low Concern**.
 
@@ -251,20 +248,20 @@ Full rule specifications, including regex signatures and negation-clause handlin
 
 ## 11. Technology Stack
 
-| Domain | Technology | Purpose |
-|---|---|---|
-| Frontend framework | React 19, TanStack Start | Full-stack SSR and modern React architecture |
-| Routing | TanStack Router | Type-safe, file-based routing |
-| Data fetching | TanStack Query 5 | Server-state caching and async mutations |
-| Styling | Tailwind CSS v4, shadcn/ui | Design tokens, light/dark theme, accessible components |
-| 3D graphics | Three.js, @react-three/fiber | Interactive landing-page scene |
-| Document processing | PDF.js, Tesseract.js | In-browser PDF extraction and OCR via Web Workers |
-| Backend and database | Supabase (PostgreSQL) | Managed database with owner-only Row Level Security |
-| Serverless functions | Supabase Edge Functions (Deno) | Secure mediation of NVIDIA and BigQuery calls |
-| Artificial intelligence | NVIDIA Nemotron 3.5 | `nvidia/nemotron-3.5-bolt-e4b` advisory guidance |
-| Threat intelligence | Google Cloud BigQuery | `offerproof_analytics.job_postings` analytics |
-| Testing | Vitest, Testing Library | 11 suites covering rules, session isolation, and UI |
-| Runtime and deployment | Nitro (Cloudflare Workers target) | Edge-compatible production build |
+| Domain                  | Technology                        | Purpose                                                |
+| ----------------------- | --------------------------------- | ------------------------------------------------------ |
+| Frontend framework      | React 19, TanStack Start          | Full-stack SSR and modern React architecture           |
+| Routing                 | TanStack Router                   | Type-safe, file-based routing                          |
+| Data fetching           | TanStack Query 5                  | Server-state caching and async mutations               |
+| Styling                 | Tailwind CSS v4, shadcn/ui        | Design tokens, light/dark theme, accessible components |
+| 3D graphics             | Three.js, @react-three/fiber      | Interactive landing-page scene                         |
+| Document processing     | PDF.js, Tesseract.js              | In-browser PDF extraction and OCR via Web Workers      |
+| Backend and database    | Supabase (PostgreSQL)             | Managed database with owner-only Row Level Security    |
+| Serverless functions    | Supabase Edge Functions (Deno)    | Secure mediation of NVIDIA and BigQuery calls          |
+| Artificial intelligence | NVIDIA Nemotron 3.5               | `nvidia/nemotron-3.5-bolt-e4b` advisory guidance       |
+| Threat intelligence     | Google Cloud BigQuery             | `offerproof_analytics.job_postings` analytics          |
+| Testing                 | Vitest, Testing Library           | 11 suites covering rules, session isolation, and UI    |
+| Runtime and deployment  | Nitro (Cloudflare Workers target) | Edge-compatible production build                       |
 
 ---
 
@@ -348,15 +345,15 @@ Coverage areas include the fraud-detection rules (including negation handling), 
 
 ## 15. Screenshots and Demo
 
-| View | Screenshot |
-|---|---|
-| Landing page | `<ADD SCREENSHOT>` |
-| Ingestion workspace (`/verify`) | `<ADD SCREENSHOT>` |
+| View                                        | Screenshot         |
+| ------------------------------------------- | ------------------ |
+| Landing page                                | `<ADD SCREENSHOT>` |
+| Ingestion workspace (`/verify`)             | `<ADD SCREENSHOT>` |
 | Results dashboard with highlighted evidence | `<ADD SCREENSHOT>` |
-| AI recommendations panel | `<ADD SCREENSHOT>` |
-| Offer comparison | `<ADD SCREENSHOT>` |
-| Scam Awareness Centre | `<ADD SCREENSHOT>` |
-| BigQuery Dataset | `<ADD SCREENSHOT>` |
+| AI recommendations panel                    | `<ADD SCREENSHOT>` |
+| Offer comparison                            | `<ADD SCREENSHOT>` |
+| Scam Awareness Centre                       | `<ADD SCREENSHOT>` |
+| BigQuery Dataset                            | `<ADD SCREENSHOT>` |
 
 **Recorded walkthrough (up to 5 minutes):** `<ADD LINK>`
 **Presentation deck (up to 8 slides):** `<ADD LINK>`
@@ -399,12 +396,12 @@ See [`docs/10-future-scope.md`](./docs/10-future-scope.md) and [`docs/roadmap.md
 
 **Team OfferProof** · Mentor Me Collective BUILD, Fall 2026 · SDG 9
 
-| Member | GitHub | Track | Individual contributions |
-|---|---|---|---|
-| **Dikshu Grover** | `<@username>` | Cloud Engineering | Delivery lead; product lead; frontend development `<CONFIRM / ADD DETAILS>` |
-| **Janet Gichia** | `<@username>` | AI Cloud Leadership | Intake and workflow; backend and AI integration `<CONFIRM / ADD DETAILS>` |
-| **Mehzad Muqadas** | `<@username>` | Cloud Cybersecurity | Verification module; permissions and evidence testing `<CONFIRM / ADD DETAILS>` |
-| **Moses Otieno** | `<@username>` | Cloud Cybersecurity | Evidence comparison module; permissions and evidence testing `<CONFIRM / ADD DETAILS>` |
+| Member             | GitHub        | Track               | Individual contributions                                                               |
+| ------------------ | ------------- | ------------------- | -------------------------------------------------------------------------------------- |
+| **Dikshu Grover**  | `<@username>` | Cloud Engineering   | Delivery lead; product lead; frontend development `<CONFIRM / ADD DETAILS>`            |
+| **Janet Gichia**   | `<@username>` | AI Cloud Leadership | Intake and workflow; backend and AI integration `<CONFIRM / ADD DETAILS>`              |
+| **Mehzad Muqadas** | `<@username>` | Cloud Cybersecurity | Verification module; permissions and evidence testing `<CONFIRM / ADD DETAILS>`        |
+| **Moses Otieno**   | `<@username>` | Cloud Cybersecurity | Evidence comparison module; permissions and evidence testing `<CONFIRM / ADD DETAILS>` |
 
 Each member's commits, pull requests, and reviews are recorded in the repository's contribution history. Replace the bracketed placeholders above with specific features, modules, tests, and documents each member authored.
 
@@ -414,20 +411,20 @@ Each member's commits, pull requests, and reviews are recorded in the repository
 
 ## 19. Documentation Hub
 
-| Document | Description |
-|---|---|
-| [`docs/01-overview.md`](./docs/01-overview.md) | Executive summary, problem statement, capabilities, and personas |
-| [`docs/02-tech-stack.md`](./docs/02-tech-stack.md) | Frontend, backend, AI, and build dependencies |
-| [`docs/03-architecture.md`](./docs/03-architecture.md) | Architecture diagrams, data flow, and security boundaries |
-| [`docs/04-workflow.md`](./docs/04-workflow.md) | Ingestion, parsing, verification, and comparison lifecycle |
-| [`docs/05-fraud-detection.md`](./docs/05-fraud-detection.md) | Rule specifications, regex signatures, negation handling |
-| [`docs/06-ai-integration.md`](./docs/06-ai-integration.md) | Edge function design, NVIDIA prompt design, JSON parsing |
-| [`docs/07-database-and-apis.md`](./docs/07-database-and-apis.md) | Supabase schema and Row Level Security |
-| [`docs/08-setup-and-deployment.md`](./docs/08-setup-and-deployment.md) | Installation, migrations, and Cloudflare deployment |
-| [`docs/09-security-and-testing.md`](./docs/09-security-and-testing.md) | Session isolation, data protection, and test matrix |
-| [`docs/10-future-scope.md`](./docs/10-future-scope.md) | Trade-offs and enhancement roadmap |
-| [`docs/11-sitemap.md`](./docs/11-sitemap.md) | Route tree, access controls, and SEO specifications |
-| [`docs/roadmap.md`](./docs/roadmap.md) | Phase tracker and milestones |
+| Document                                                               | Description                                                      |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| [`docs/01-overview.md`](./docs/01-overview.md)                         | Executive summary, problem statement, capabilities, and personas |
+| [`docs/02-tech-stack.md`](./docs/02-tech-stack.md)                     | Frontend, backend, AI, and build dependencies                    |
+| [`docs/03-architecture.md`](./docs/03-architecture.md)                 | Architecture diagrams, data flow, and security boundaries        |
+| [`docs/04-workflow.md`](./docs/04-workflow.md)                         | Ingestion, parsing, verification, and comparison lifecycle       |
+| [`docs/05-fraud-detection.md`](./docs/05-fraud-detection.md)           | Rule specifications, regex signatures, negation handling         |
+| [`docs/06-ai-integration.md`](./docs/06-ai-integration.md)             | Edge function design, NVIDIA prompt design, JSON parsing         |
+| [`docs/07-database-and-apis.md`](./docs/07-database-and-apis.md)       | Supabase schema and Row Level Security                           |
+| [`docs/08-setup-and-deployment.md`](./docs/08-setup-and-deployment.md) | Installation, migrations, and Cloudflare deployment              |
+| [`docs/09-security-and-testing.md`](./docs/09-security-and-testing.md) | Session isolation, data protection, and test matrix              |
+| [`docs/10-future-scope.md`](./docs/10-future-scope.md)                 | Trade-offs and enhancement roadmap                               |
+| [`docs/11-sitemap.md`](./docs/11-sitemap.md)                           | Route tree, access controls, and SEO specifications              |
+| [`docs/roadmap.md`](./docs/roadmap.md)                                 | Phase tracker and milestones                                     |
 
 ---
 

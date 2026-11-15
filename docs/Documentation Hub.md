@@ -6,20 +6,20 @@ Welcome to the comprehensive technical documentation for **OfferProof**, an expl
 
 ## Documentation Index
 
-| Section | Document | Description |
-|---|---|---|
-| **01** | [Project Overview](./01-overview.md) | What OfferProof is, problem statement, key features, and page routes |
-| **02** | [Technology Stack](./02-tech-stack.md) | Complete list of frontend, backend, database, AI models, and testing tools |
-| **03** | [System Architecture](./03-architecture.md) | High-level system architecture, component map, data flow, and Mermaid diagrams |
-| **04** | [Working Workflow](./04-workflow.md) | Step-by-step lifecycle of an offer: ingestion, session scoping, verification, and results |
-| **05** | [Fraud Detection Rules](./05-fraud-detection.md) | Complete reference of all 11 heuristic rules, negation handling, scoring, and severity |
-| **06** | [AI Integration](./06-ai-integration.md) | NVIDIA AI Edge Function, prompt design, structured parsing, and non-blocking state |
-| **07** | [Database & APIs](./07-database-and-apis.md) | Supabase PostgreSQL schema, RLS policies, Edge Functions, and BigQuery data flow |
-| **08** | [Setup & Deployment](./08-setup-and-deployment.md) | Prerequisites, environment configuration, database migrations, running tests, and deployment |
-| **09** | [Security & Testing](./09-security-and-testing.md) | Data privacy, multi-user session isolation, 11 Vitest test suites, and troubleshooting |
-| **10** | [Future Scope](./10-future-scope.md) | Current boundaries, technical trade-offs, and enhancement roadmap |
-| **11** | [Application Sitemap & Routes](./11-sitemap.md) | Complete route hierarchy, visual navigation diagram, route guards, and SEO sitemap |
-| **Roadmap** | [Development Phases & Roadmap](./roadmap.md) | Project delivery phases, completed features, and upcoming milestone tracker |
+| Section     | Document                                           | Description                                                                                  |
+| ----------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **01**      | [Project Overview](./01-overview.md)               | What OfferProof is, problem statement, key features, and page routes                         |
+| **02**      | [Technology Stack](./02-tech-stack.md)             | Complete list of frontend, backend, database, AI models, and testing tools                   |
+| **03**      | [System Architecture](./03-architecture.md)        | High-level system architecture, component map, data flow, and Mermaid diagrams               |
+| **04**      | [Working Workflow](./04-workflow.md)               | Step-by-step lifecycle of an offer: ingestion, session scoping, verification, and results    |
+| **05**      | [Fraud Detection Rules](./05-fraud-detection.md)   | Complete reference of all 11 heuristic rules, negation handling, scoring, and severity       |
+| **06**      | [AI Integration](./06-ai-integration.md)           | NVIDIA AI Edge Function, prompt design, structured parsing, and non-blocking state           |
+| **07**      | [Database & APIs](./07-database-and-apis.md)       | Supabase PostgreSQL schema, RLS policies, Edge Functions, and BigQuery data flow             |
+| **08**      | [Setup & Deployment](./08-setup-and-deployment.md) | Prerequisites, environment configuration, database migrations, running tests, and deployment |
+| **09**      | [Security & Testing](./09-security-and-testing.md) | Data privacy, multi-user session isolation, 11 Vitest test suites, and troubleshooting       |
+| **10**      | [Future Scope](./10-future-scope.md)               | Current boundaries, technical trade-offs, and enhancement roadmap                            |
+| **11**      | [Application Sitemap & Routes](./11-sitemap.md)    | Complete route hierarchy, visual navigation diagram, route guards, and SEO sitemap           |
+| **Roadmap** | [Development Phases & Roadmap](./roadmap.md)       | Project delivery phases, completed features, and upcoming milestone tracker                  |
 
 ---
 

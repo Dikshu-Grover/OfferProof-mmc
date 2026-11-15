@@ -1,4 +1,5 @@
 <!-- LOVABLE:BEGIN -->
+
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
 > published git history — force pushing, or rebasing/amending/squashing commits
@@ -7,7 +8,9 @@
 >
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
+
 <!-- LOVABLE:END -->
+
 - Offer checks live in src/lib/verify/engine.ts as pure TS rules (no React/DOM) so they stay unit-testable; file extraction (pdfjs/tesseract) is dynamically imported, browser-only.
 - Completed navigation to /verify remounts its verification attempt, including same-route links, so transient offer, upload and checklist state cannot leak into a new check.
 - Email ownership is derived from explicit address labels; only recruiter/contact addresses feed sender-domain checks, while ambiguous addresses remain unattributed to avoid applicant-driven warnings.

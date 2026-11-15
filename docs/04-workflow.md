@@ -9,13 +9,16 @@ This section explains the step-by-step journey of an offer through OfferProof, f
 The user visits `/verify`. They have two input methods:
 
 ### Option A: Paste Text
+
 The user pastes the raw email, message or offer letter into the textarea (up to 50,000 characters).  
 A "Try a fictional sample" button loads a built-in scam example for demonstration.
 
 ### Option B: Upload a File
+
 The user uploads a **PDF** or a **JPG/PNG screenshot**.
 
 **PDF extraction** (browser-side, via PDF.js Web Worker):
+
 ```
 file.arrayBuffer()
   → pdfjs.getDocument(data)
@@ -25,6 +28,7 @@ file.arrayBuffer()
 ```
 
 **Image OCR** (browser-side, via Tesseract.js Web Worker):
+
 ```
 createWorker("eng")
   → worker.recognize(imageFile)
@@ -55,6 +59,7 @@ const report = analyze(text);
 This is a **pure TypeScript function** — no network, no React, no DOM. It runs synchronously in the browser main thread and returns a `Report` object in milliseconds.
 
 ### What the engine does:
+
 1. **Normalises** carriage returns.
 2. **Extracts structured data** using regex patterns (`extract(text)`):
    - Emails → classified as recruiter, applicant, or unknown by surrounding context
@@ -70,6 +75,7 @@ This is a **pure TypeScript function** — no network, no React, no DOM. It runs
 ## Step 4 — Results Are Displayed
 
 `ReportView` renders:
+
 - **Assessment banner** (Low Concern / Needs Review / High Concern) with a summary message
 - **Concern Signals** — vertically scrollable list (420px max on desktop); each finding shows name, severity badge, evidence chips, explanation, and recommended action
 - **Extracted Details** — two-column compact grid of everything the engine parsed
@@ -83,6 +89,7 @@ This is a **pure TypeScript function** — no network, no React, no DOM. It runs
 `AiRecommendations` triggers a Supabase Edge Function call in the background immediately after results are displayed. The UI shows a loading skeleton; errors are non-blocking with a retry button.
 
 **Request payload** (sent via `supabase.functions.invoke()`):
+
 ```json
 {
   "sessionId": "abc-uuid-...",
@@ -99,6 +106,7 @@ This is a **pure TypeScript function** — no network, no React, no DOM. It runs
 ```
 
 **Edge Function** (`offerproof-ai-recommendations/index.ts`) on Supabase:
+
 1. Reads `NVIDIA_API_KEY` from Deno environment secrets.
 2. Builds a system prompt instructing the NVIDIA model to structure output under exactly three headings.
 3. Sends a POST to `https://integrate.api.nvidia.com/v1/chat/completions` with model `nvidia/nemotron-3.5-bolt-e4b`, temperature 0.3, max 1024 tokens, and a 25-second AbortController timeout.
@@ -115,6 +123,7 @@ This is a **pure TypeScript function** — no network, no React, no DOM. It runs
 ## Step 6 — Saving the Report (Signed-in Users)
 
 When the user clicks **"Save report"**:
+
 1. `saveOfferWithReport(text, report)` is called.
 2. `parseSalary()` from `compare/engine.ts` converts the salary string to `{ amount, currency, period }`.
 3. `supabase.from("offers").insert(...)` creates the offer row. Row Level Security enforces `auth.uid() = user_id`.
@@ -126,6 +135,7 @@ When the user clicks **"Save report"**:
 ## Step 7 — Guest Pending Queue
 
 If the user is not signed in but wants to save or compare offers:
+
 1. `addPending(text)` stores the offer text in `localStorage` (key `offerproof:pending-offers`).
 2. The user is redirected to `/login`.
 3. After sign-in, `importPending()` is called (via `useImportPending()` hook on authenticated pages), which runs `saveOfferWithReport()` for each queued offer and clears the queue.
@@ -135,6 +145,7 @@ If the user is not signed in but wants to save or compare offers:
 ## Step 8 — Comparing Offers (Signed-in Users)
 
 On the `/compare` route:
+
 1. The user selects two or more saved offers by ticking checkboxes.
 2. `compareOffers(rows)` from `compare/engine.ts` runs — also pure TypeScript, no network.
 3. Salaries are annualised using `PERIOD_FACTOR` (month×12, week×52, day×260, hour×2080) for fair comparison.

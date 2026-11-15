@@ -19,6 +19,7 @@ import type { OfferRow } from "@/lib/offers";
 import { compareOffers, type CompareOffer, type Period } from "@/lib/compare/engine";
 import { ASSESSMENT_META, type Assessment, type Finding } from "@/lib/verify/engine";
 import { useImportPending } from "@/hooks/use-import-pending";
+import { AiCompareAdvisor } from "@/components/compare/AiCompareAdvisor";
 
 export const Route = createFileRoute("/_authenticated/compare")({
   validateSearch: (s: Record<string, unknown>): { id?: string | undefined } => ({
@@ -257,6 +258,10 @@ function Compare() {
               </div>
             )}
           </section>
+
+          {/* AI Career Advisor powered by NVIDIA Nemotron */}
+          <AiCompareAdvisor offers={rows} />
+
           <section>
             <h2 className="text-xl font-semibold">Safety warnings</h2>
             <p className="mt-1 text-xs text-muted-foreground">

@@ -123,18 +123,30 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html { scroll-behavior: smooth; }
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
 }
 
-@utility shadow-card { box-shadow: var(--shadow-card); }
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
+}
 @utility bg-grid {
   background-image:
     linear-gradient(var(--grid-line) 1px, transparent 1px),
@@ -163,14 +175,31 @@
   padding: 0 2px;
 }
 
-@keyframes scanline { 0% { transform: translateY(-10%); } 100% { transform: translateY(1000%); } }
-@utility animate-scan { animation: scanline 2.4s ease-in-out infinite alternate; }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+@keyframes scanline {
+  0% {
+    transform: translateY(-10%);
+  }
+  100% {
+    transform: translateY(1000%);
+  }
+}
+@utility animate-scan {
+  animation: scanline 2.4s ease-in-out infinite alternate;
 }
 
-#lovable-badge { display: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+#lovable-badge {
+  display: none !important;
+}
 
 /* ─── Print / PDF styles ─────────────────────────────────────────────────── */
 @media print {
@@ -179,11 +208,19 @@
   footer,
   nav,
   [data-radix-scroll-area-viewport],
-  .print\:hidden { display: none !important; }
+  .print\:hidden {
+    display: none !important;
+  }
 
   /* Reset page margins and background */
-  @page { margin: 1.2cm 1.4cm; }
-  body { background: white !important; color: black !important; font-size: 11pt; }
+  @page {
+    margin: 1.2cm 1.4cm;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+  }
 
   /* Remove overflow clipping so scrollable boxes expand fully */
   [class*="overflow-y-auto"],
@@ -202,14 +239,23 @@
   }
 
   /* Avoid page breaks splitting a finding card */
-  article { break-inside: avoid; page-break-inside: avoid; }
+  article {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 
   /* Section spacing */
-  #report > * { margin-bottom: 1rem; }
+  #report > * {
+    margin-bottom: 1rem;
+  }
 
   /* Action guide — keep together */
-  #report > div.rounded-2xl.bg-ink { break-inside: avoid; }
+  #report > div.rounded-2xl.bg-ink {
+    break-inside: avoid;
+  }
 
   /* Remove shadows and decorative borders to save ink */
-  .shadow-card { box-shadow: none !important; }
+  .shadow-card {
+    box-shadow: none !important;
+  }
 }
