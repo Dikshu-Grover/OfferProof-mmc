@@ -430,8 +430,6 @@ See [`docs/10-future-scope.md`](./docs/10-future-scope.md) and [`docs/roadmap.md
 | **Mehzad Muqadas** | [@Mehzad Muqadas](https://github.com/MehzadMuqadas) | Cloud Cybersecurity | Audited and validated fraud verification rules; developed the testing spreadsheet and 20 test scenarios (S01–S20); documented fraud indicators; conducted evidence and permissions testing; prepared supporting documentation and screenshots; collaborated on the PowerPoint presentation and product showcase. |        |
 | **Moses Otieno**   | [@Otieno27](https://github.com/Otieno27) | Cloud Cybersecurity | Evidence comparison module; permissions and evidence testing `<CONFIRM / ADD DETAILS>` |
 
-Each member's commits, pull requests, and reviews are recorded in the repository's contribution history. Replace the bracketed placeholders above with specific features, modules, tests, and documents each member authored.
-
 **Acknowledgements:** Mentor Me Collective, the Google Cloud Launchpad program team, and NVIDIA for the inference platform and Nemotron models.
 
 ---
