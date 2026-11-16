@@ -13,6 +13,15 @@ export interface Finding {
   action: string;
 }
 
+/**
+ * Structured finding returned by the existing AI analysis flow.
+ * Evidence must contain at least one verbatim excerpt from the offer text.
+ * The excerpt check below prevents unsupported AI claims from affecting the verdict.
+ */
+export interface AiFinding extends Finding {
+  confidence: number; // 0..1
+}
+
 export interface Extracted {
   company: string | null;
   recruiter: string | null;
@@ -338,7 +347,7 @@ const UNREALISTIC = [
   /\bguaranteed (?:income|salary|placement|job)\b/i,
 ];
 
-export function analyze(text: string): Report {
+export function analyze(text: string, aiFindings: AiFinding[] = []): Report {
   const t = text.replace(/\r/g, "");
   const x = extract(t);
   const findings: Finding[] = [];
@@ -525,6 +534,51 @@ export function analyze(text: string): Report {
       action:
         "Ask the recruiter for a formal offer letter that includes these details on company letterhead.",
     });
+
+  // Only accept AI findings with sufficient confidence AND evidence quoted
+  // verbatim from this offer. AI-only speculation must not determine the verdict.
+  const normalizeEvidence = (value: string) =>
+    value.toLowerCase().replace(/\\s+/g, " ").trim();
+  const normalizedOffer = normalizeEvidence(t);
+
+  const acceptedAiFindings = aiFindings.filter((finding) => {
+    const confidenceIsValid =
+      Number.isFinite(finding.confidence) &&
+      finding.confidence >= 0.7 &&
+      finding.confidence <= 1;
+    const hasGroundedEvidence = finding.evidence.some((excerpt) => {
+      const normalizedExcerpt = normalizeEvidence(excerpt);
+      return normalizedExcerpt.length >= 8 && normalizedOffer.includes(normalizedExcerpt);
+    });
+    return confidenceIsValid && hasGroundedEvidence;
+  });
+
+  // Merge duplicate AI/rule findings so the same signal is not scored twice.
+  const severityRank: Record<Severity, number> = { low: 1, medium: 2, high: 3 };
+  for (const aiFinding of acceptedAiFindings) {
+    const existing = findings.find(
+      (finding) =>
+        finding.id === aiFinding.id ||
+        normalizeEvidence(finding.name) === normalizeEvidence(aiFinding.name),
+    );
+
+    if (existing) {
+      existing.severity =
+        severityRank[aiFinding.severity] > severityRank[existing.severity]
+          ? aiFinding.severity
+          : existing.severity;
+      existing.evidence = [...new Set([...existing.evidence, ...aiFinding.evidence])];
+      if (!existing.explanation && aiFinding.explanation) {
+        existing.explanation = aiFinding.explanation;
+      }
+      if (!existing.action && aiFinding.action) {
+        existing.action = aiFinding.action;
+      }
+    } else {
+      const { confidence: _confidence, ...finding } = aiFinding;
+      findings.push(finding);
+    }
+  }
 
   const weight = { low: 1, medium: 3, high: 6 } as const;
   const points = findings.reduce((s, f) => s + weight[f.severity], 0);
