@@ -30,7 +30,7 @@ _Mentor Me Collective (MMC) BUILD, Fall 2026 · Google Cloud Launchpad Showcase 
 | Presentation deck (up to 8 slides)     | <ADD LINK>                                                                                       |
 | Recorded walkthrough (up to 5 minutes) | <ADD LINK>                                                                                       |
 | Written summary (up to 3 pages)        | <ADD LINK>                                                                                       |
-| Team Findings (Google Drive)           | [Drive](https://drive.google.com/drive/folders/1Jdwh1QJlVpfTxtblkf1X1PwKmggzAcDd?usp=share_link) |
+| Team Findings (Google Drive)           | [Open Drive](https://drive.google.com/drive/folders/1Jdwh1QJlVpfTxtblkf1X1PwKmggzAcDd?usp=share_link) |
 
 ---
 
