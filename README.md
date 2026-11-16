@@ -33,6 +33,17 @@ _Mentor Me Collective (MMC) BUILD, Fall 2026 · Google Cloud Launchpad Showcase 
 | Team Findings (Google Drive)           | [Drive](https://drive.google.com/drive/folders/1Jdwh1QJlVpfTxtblkf1X1PwKmggzAcDd?usp=share_link) |
 
 ---
+## 🎮 Demo Access
+
+Explore OfferProof without creating an account.
+
+- **Email:** demo@offerproof.com
+- **Password:** OfferProof@2026
+
+Alternatively, use the "Explore Demo Account" button
+on the login page.
+
+---
 
 ## Table of Contents
 
