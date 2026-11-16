@@ -216,7 +216,7 @@ sequenceDiagram
 
 OfferProof uses **Google Cloud BigQuery** as its threat-intelligence data layer.
 
-- **Dataset:** `[xenon-hub-514707-f9.offerproof_analytics.job_postings](https://github.com/user-attachments/assets/59e97067-63ad-44a5-af85-03c19856ecea)`
+- **Dataset:** [xenon-hub-514707-f9.offerproof_analytics.job_postings](https://github.com/user-attachments/assets/59e97067-63ad-44a5-af85-03c19856ecea)
 - **Access pattern:** the browser never talks to BigQuery directly. The `offerproof-job-postings` Supabase Edge Function authenticates to Google Cloud using a **service account** and a signed **RS256 JWT** exchanged through Google OAuth2, then runs filtered queries on behalf of the app.
 - **Feature enabled:** the **Scam Awareness Centre**, where users explore real-world patterns in fraudulent versus legitimate postings with instant filtering.
 - **Secret handling:** the service-account credentials are stored as an Edge Function secret (`GOOGLE_SERVICE_ACCOUNT_JSON`) and are never exposed to the client.
