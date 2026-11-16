@@ -104,7 +104,7 @@ function firstGroup(text: string, re: RegExp): string | null {
 }
 
 const RECRUITER_PATTERN =
-  /\b(?:recruiter(?:'s)?|recruitment(?:\s+team)?|talent\s+acquisition|hr\s+representative|hr\s+rep|hr\s+manager|hr\s+team|hr\s+department|human\s+resources|hr|hiring\s+contact|hiring\s+manager|hiring\s+team|contact\s+person|contact(?:\s+us)?|from|sender|sent\s+by)\b/i;
+  /\b(?:recruiter(?:'s)?|recruitment(?:\s+team)?|talent\s+acquisition|hr\s+representative|hr\s+rep|hr\s+manager|hr\s+team|hr\s+department|human\s+resources|hr|hiring\s+contact|hiring\s+manager|hi[...]/
 const APPLICANT_PATTERN =
   /\b(?:applicant(?:'s)?|candidate(?:'s)?|recipient(?:'s)?)\b|\b(?:sent\s+)?to(?:\s*[:-]|(?=\s+[A-Z0-9._%+-]+@))/i;
 
@@ -243,7 +243,7 @@ export function extract(text: string): Extracted {
       ),
     recruiter: firstGroup(
       text,
-      /(?:[Rr]egards|[Ss]incerely|[Rr]ecruiter|HR [Mm]anager|[Hh]iring [Mm]anager)\s*[,:-]?\s*\n?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/,
+      /(?:[Rr]egards|[Ss]incerely|[Rr]ecruiter|HR [Mm]anager|[Hh]iring [Mm]anager)\s*[:,-]?\s*\n?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/,
     ),
     jobTitle: firstGroup(
       text,
@@ -251,25 +251,8 @@ export function extract(text: string): Extracted {
     ),
     salary: firstGroup(
       text,
-      /\b(?:salary|stipend|ctc|compensation|package|pay)\b\s*(?:of|is)?\s*[:-]?\s*((?:(?:₹|rs\.?|inr|\$|usd|£|€|gbp|eur)\s*)?\d[\d,]*(?:\.\d+)?(?:[ \t]*(?:inr|usd|gbp|eur))?(?:\s*(?:per\s+(?:year|annum|month|week|day|hour)|annual(?:ly)?|monthly|lpa))?[^\n;]{0,40})/i,
-    ),
-    joiningDate: firstGroup(
-      text,
-      /(?:joining date|start date|date of joining|report(?:ing)? on|commence on)\s*[:-]?\s*([^\n]{2,40})/i,
-    ),
-    location: firstGroup(
-      text,
-      /(?:location|work location|based in|office)\s*[:-]\s*([^\n]{2,50})/i,
-    ),
-    emails,
-    ...classifyEmails(text, emails),
-    domains: [...domains],
-    urls,
-    phones: findAll(
-      text,
-      /(?:\+\d{1,3}[\s-]?)?(?:\(?\d{3,5}\)?[\s-]?)\d{3,5}[\s-]?\d{3,5}/g,
-    ).filter((p) => p.replace(/\D/g, "").length >= 10),
-  };
+      /\b(?:salary|stipend|ctc|compensation|package|pay)\b\s*(?:of|is)?\s*[:-]?\s*((?:(?:₹|rs\.?|inr|\$|usd|£|€|gbp|eur)\s*)?\d[\d,]*(?:\.\d+)?(?:[ \t]*(?:inr|usd|gbp|eur))?(?:\s*(?:per\s+(?[...])
+  );
 }
 
 export function hostOf(u: string): string | null {
@@ -391,7 +374,7 @@ export function analyze(text: string, aiFindings: AiFinding[] = []): Report {
       severity: "high",
       evidence: [...chequeDeposit, ...forwardMoney],
       explanation:
-        "A request to deposit a cheque and forward funds to a vendor is a fake-cheque scam pattern. Funds may appear available before the bank discovers the cheque is invalid; this is a warning, not proof of fraud.",
+        "A request to deposit a cheque and forward funds to a vendor is a fake-cheque scam pattern. Funds may appear available before the bank discovers the cheque is invalid; this is a warning, [...]
       action:
         "Do not forward funds. Ask your bank to investigate the cheque and verify the request independently with the employer.",
     });
@@ -537,8 +520,7 @@ export function analyze(text: string, aiFindings: AiFinding[] = []): Report {
 
   // Only accept AI findings with sufficient confidence AND evidence quoted
   // verbatim from this offer. AI-only speculation must not determine the verdict.
-  const normalizeEvidence = (value: string) =>
-    value.toLowerCase().replace(/\\s+/g, " ").trim();
+  const normalizeEvidence = (value: string) => value.toLowerCase().replace(/\s+/g, " ").trim();
   const normalizedOffer = normalizeEvidence(t);
 
   const acceptedAiFindings = aiFindings.filter((finding) => {
