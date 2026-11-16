@@ -41,7 +41,7 @@ Explore OfferProof without creating an account.
 - **Email:** demo@offerproof.com
 - **Password:** OfferProof@2026
 
-Alternatively, use the "**Explore Demo Account**" button
+Alternatively, use the "**Explore Demo**" button
 on the login page.
 
 ---
