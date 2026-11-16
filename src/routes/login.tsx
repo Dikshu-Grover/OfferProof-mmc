@@ -1,4 +1,3 @@
-
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { Loader2, UserRound } from "lucide-react";
@@ -10,9 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getPending, safeRedirect } from "@/lib/offers";
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (
-    s: Record<string, unknown>,
-  ): { redirect?: string | undefined } => ({
+  validateSearch: (s: Record<string, unknown>): { redirect?: string | undefined } => ({
     redirect: typeof s["redirect"] === "string" ? s["redirect"] : undefined,
   }),
   head: () => ({
@@ -59,9 +56,7 @@ export function Login() {
     if (busy || demoBusy) return;
 
     if (!/^\S+@\S+\.\S+$/.test(email) || password.length < 8) {
-      toast.error(
-        "Enter a valid email and a password of at least 8 characters.",
-      );
+      toast.error("Enter a valid email and a password of at least 8 characters.");
       return;
     }
 
@@ -78,18 +73,16 @@ export function Login() {
         });
 
         const isExistingUser =
-          (data?.user?.identities &&
-            data.user.identities.length === 0) ||
+          (data?.user?.identities && data.user.identities.length === 0) ||
           (error &&
             (error.message?.toLowerCase().includes("already registered") ||
               error.message?.toLowerCase().includes("already exists")));
 
         if (isExistingUser) {
-          const { error: signInErr } =
-            await supabase.auth.signInWithPassword({
-              email,
-              password,
-            });
+          const { error: signInErr } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
 
           if (!signInErr) {
             navigate({ to: target, replace: true });
@@ -97,9 +90,7 @@ export function Login() {
           }
 
           if (
-            signInErr.message
-              ?.toLowerCase()
-              .includes("invalid login credentials")
+            signInErr.message?.toLowerCase().includes("invalid login credentials")
           ) {
             toast.error(
               "An account with this email already exists. Please enter your existing password to sign in.",
@@ -127,9 +118,7 @@ export function Login() {
 
       navigate({ to: target, replace: true });
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Something went wrong.",
-      );
+      toast.error(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setBusy(false);
     }
@@ -141,12 +130,9 @@ export function Login() {
     setDemoBusy(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke(
-        "demo-login",
-        {
-          body: {},
-        },
-      );
+      const { data, error } = await supabase.functions.invoke("demo-login", {
+        body: {},
+      });
 
       if (error) throw error;
 
@@ -154,11 +140,10 @@ export function Login() {
         throw new Error("Invalid demo session.");
       }
 
-      const { error: sessionError } =
-        await supabase.auth.setSession({
-          access_token: data.access_token,
-          refresh_token: data.refresh_token,
-        });
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+      });
 
       if (sessionError) throw sessionError;
 
@@ -168,9 +153,7 @@ export function Login() {
     } catch (err) {
       console.error("Demo login failed:", err);
 
-      toast.error(
-        "Unable to open the demo. Please try again.",
-      );
+      toast.error("Unable to open the demo. Please try again.");
     } finally {
       setDemoBusy(false);
     }
@@ -182,45 +165,36 @@ export function Login() {
         <UserRound className="mx-auto size-10 text-primary" />
 
         <h1 className="mt-4 text-center text-2xl font-bold">
-          {mode === "signin"
-            ? "Welcome back"
-            : "Create your account"}
+          {mode === "signin" ? "Welcome back" : "Create your account"}
         </h1>
 
         <p className="mt-2 text-center text-sm text-muted-foreground">
-          Save reports, compare offers and reopen your history.
-          Checking an offer never needs an account.
+          Save reports, compare offers and reopen your history. Checking an offer
+          never needs an account.
         </p>
 
         {pending > 0 && (
           <p className="mt-4 rounded-lg bg-accent px-3 py-2 text-center text-xs text-accent-foreground">
-            {pending} offer(s) from this visit will be added to
-            your account after you sign in.
+            {pending} offer(s) from this visit will be added to your account after
+            you sign in.
           </p>
         )}
 
         {sent ? (
           <div className="mt-6 rounded-lg border p-4 text-center text-sm">
-            Check <b>{email}</b> for a confirmation link. After
-            confirming you'll come back here and your offers
-            will be kept.
+            Check <b>{email}</b> for a confirmation link. After confirming you'll
+            come back here and your offers will be kept.
           </div>
         ) : (
           <>
             <Tabs
               value={mode}
-              onValueChange={(v) =>
-                setMode(v as "signin" | "signup")
-              }
+              onValueChange={(v) => setMode(v as "signin" | "signup")}
               className="mt-6"
             >
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">
-                  Sign in
-                </TabsTrigger>
-                <TabsTrigger value="signup">
-                  Sign up
-                </TabsTrigger>
+                <TabsTrigger value="signin">Sign in</TabsTrigger>
+                <TabsTrigger value="signup">Sign up</TabsTrigger>
               </TabsList>
             </Tabs>
 
@@ -238,11 +212,7 @@ export function Login() {
 
               <Input
                 type="password"
-                autoComplete={
-                  mode === "signup"
-                    ? "new-password"
-                    : "current-password"
-                }
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
                 placeholder="Password (8+ characters)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -251,25 +221,15 @@ export function Login() {
                 disabled={busy || demoBusy}
               />
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={busy || demoBusy}
-              >
-                {busy && (
-                  <Loader2 className="size-4 animate-spin" />
-                )}
-                {mode === "signin"
-                  ? "Sign in"
-                  : "Create account"}
+              <Button type="submit" className="w-full" disabled={busy || demoBusy}>
+                {busy && <Loader2 className="size-4 animate-spin" />}
+                {mode === "signin" ? "Sign in" : "Create account"}
               </Button>
             </form>
 
             <div className="my-4 flex items-center gap-3">
               <div className="h-px flex-1 bg-border" />
-              <span className="text-xs text-muted-foreground">
-                OR
-              </span>
+              <span className="text-xs text-muted-foreground">OR</span>
               <div className="h-px flex-1 bg-border" />
             </div>
 
@@ -280,17 +240,13 @@ export function Login() {
               onClick={exploreDemo}
               disabled={busy || demoBusy}
             >
-              {demoBusy && (
-                <Loader2 className="size-4 animate-spin" />
-              )}
-              {demoBusy
-                ? "Opening demo..."
-                : "Explore Demo"}
+              {demoBusy && <Loader2 className="size-4 animate-spin" />}
+              {demoBusy ? "Opening demo..." : "Explore Demo"}
             </Button>
 
             <p className="mt-3 text-center text-xs text-muted-foreground">
-              Explore OfferProof using the demo account without
-              entering login credentials.
+              Explore OfferProof using the demo account without entering login
+              credentials.
             </p>
           </>
         )}
