@@ -104,7 +104,7 @@ function firstGroup(text: string, re: RegExp): string | null {
 }
 
 const RECRUITER_PATTERN =
-  /\b(?:recruiter(?:'s)?|recruitment(?:\s+team)?|talent\s+acquisition|hr\s+representative|hr\s+rep|hr\s+manager|hr\s+team|hr\s+department|human\s+resources|hr|hiring\s+contact|hiring\s+manager|hi[...]/
+  /\b(?:recruiter(?:'s)?|recruitment(?:\s+team)?|talent\s+acquisition|hr\s+representative|hr\s+rep|hr\s+manager|hr\s+team|hr\s+department|human\s+resources|hr|hiring\s+contact|hiring\s+manager|hiring\s+team|recruitment\s+manager|talent\s+partner|career\s+advisor)/i;
 const APPLICANT_PATTERN =
   /\b(?:applicant(?:'s)?|candidate(?:'s)?|recipient(?:'s)?)\b|\b(?:sent\s+)?to(?:\s*[:-]|(?=\s+[A-Z0-9._%+-]+@))/i;
 
@@ -251,8 +251,9 @@ export function extract(text: string): Extracted {
     ),
     salary: firstGroup(
       text,
-      /\b(?:salary|stipend|ctc|compensation|package|pay)\b\s*(?:of|is)?\s*[:-]?\s*((?:(?:₹|rs\.?|inr|\$|usd|£|€|gbp|eur)\s*)?\d[\d,]*(?:\.\d+)?(?:[ \t]*(?:inr|usd|gbp|eur))?(?:\s*(?:per\s+(?[...])
-  );
+      /\b(?:salary|stipend|ctc|compensation|package|pay)\b\s*(?:of|is)?\s*[:-]?\s*((?:(?:₹|rs\.?|inr|\$|usd|£|€|gbp|eur)\s*)?\d[\d,]*(?:\.\d+)?(?:\s*(?:inr|usd|gbp|eur))?(?:\s*(?:per\s+(?:annum|month|year|day|hour|week)|\/(?:month|year|annum|hour|day)|p\.?a\.?|p\.?m\.?) )?)/i,
+    ),
+  };
 }
 
 export function hostOf(u: string): string | null {
@@ -374,7 +375,7 @@ export function analyze(text: string, aiFindings: AiFinding[] = []): Report {
       severity: "high",
       evidence: [...chequeDeposit, ...forwardMoney],
       explanation:
-        "A request to deposit a cheque and forward funds to a vendor is a fake-cheque scam pattern. Funds may appear available before the bank discovers the cheque is invalid; this is a warning, [...]
+        "A request to deposit a cheque and forward funds to a vendor is a fake-cheque scam pattern. Funds may appear available before the bank discovers the cheque is invalid; this is a warning sign of fraud.",
       action:
         "Do not forward funds. Ask your bank to investigate the cheque and verify the request independently with the employer.",
     });
