@@ -17,8 +17,7 @@ export const Route = createFileRoute("/login")({
       { title: "Login — OfferProof" },
       {
         name: "description",
-        content:
-          "Sign in to save reports, compare offers and see your verification history.",
+        content: "Sign in to save reports, compare offers and see your verification history.",
       },
       { property: "og:title", content: "Login — OfferProof" },
       { property: "og:description", content: "Sign in to OfferProof." },
@@ -89,9 +88,7 @@ export function Login() {
             return;
           }
 
-          if (
-            signInErr.message?.toLowerCase().includes("invalid login credentials")
-          ) {
+          if (signInErr.message?.toLowerCase().includes("invalid login credentials")) {
             toast.error(
               "An account with this email already exists. Please enter your existing password to sign in.",
             );
@@ -169,21 +166,20 @@ export function Login() {
         </h1>
 
         <p className="mt-2 text-center text-sm text-muted-foreground">
-          Save reports, compare offers and reopen your history. Checking an offer
-          never needs an account.
+          Save reports, compare offers and reopen your history. Checking an offer never needs an
+          account.
         </p>
 
         {pending > 0 && (
           <p className="mt-4 rounded-lg bg-accent px-3 py-2 text-center text-xs text-accent-foreground">
-            {pending} offer(s) from this visit will be added to your account after
-            you sign in.
+            {pending} offer(s) from this visit will be added to your account after you sign in.
           </p>
         )}
 
         {sent ? (
           <div className="mt-6 rounded-lg border p-4 text-center text-sm">
-            Check <b>{email}</b> for a confirmation link. After confirming you'll
-            come back here and your offers will be kept.
+            Check <b>{email}</b> for a confirmation link. After confirming you'll come back here and
+            your offers will be kept.
           </div>
         ) : (
           <>
@@ -245,8 +241,7 @@ export function Login() {
             </Button>
 
             <p className="mt-3 text-center text-xs text-muted-foreground">
-              Explore OfferProof using the demo account without entering login
-              credentials.
+              Explore OfferProof using the demo account without entering login credentials.
             </p>
           </>
         )}
