@@ -310,7 +310,6 @@ export function extract(text: string): Extracted {
   };
 }
 
-
 export function hostOf(url: string): string | null {
   try {
     return new URL(url.startsWith("http") ? url : `https://${url}`).hostname
@@ -320,7 +319,6 @@ export function hostOf(url: string): string | null {
     return null;
   }
 }
-
 
 function rootDomain(host: string): string {
   const parts = host.split(".");
