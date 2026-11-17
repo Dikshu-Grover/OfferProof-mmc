@@ -631,21 +631,24 @@ export function analyze(text: string): Report {
     });
   }
 
-  const weight = { low: 1, medium: 3, high: 6 } as const;
-  const points = findings.reduce((s, f) => s + weight[f.severity], 0);
-  const assessment: Assessment =
-    findings.some((f) => f.severity === "high") || points >= 8
-      ? "high_concern"
-      : points >= 3
-        ? "needs_review"
-        : "low_concern";
-  const phrases = [
-    ...new Set(
-      findings
-        .filter((f) => !["missing_details", "domain_mismatch"].includes(f.id))
-        .flatMap((f) => f.evidence),
-    ),
-  ];
+const weight = { low: 1, medium: 3, high: 6 } as const;
+
+const points = findings.reduce((s, f) => s + weight[f.severity], 0);
+
+const assessment: Assessment =
+  findings.some((f) => f.severity === "high") || points >= 8
+    ? "high_concern"
+    : findings.length >= 2
+      ? "needs_review"
+      : "low_concern";
+
+const phrases = [
+  ...new Set(
+    findings
+      .filter((f) => !["missing_details", "domain_mismatch"].includes(f.id))
+      .flatMap((f) => f.evidence),
+  ),
+];
 
   return { assessment, points, findings, extracted: x, phrases };
 }
