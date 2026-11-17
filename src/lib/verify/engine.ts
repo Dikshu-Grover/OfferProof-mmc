@@ -1,5 +1,6 @@
-// Explainable, rule-based offer checks. Pure TypeScript: no React, no DOM.
-// Results are heuristic signals, never a guarantee or a fraud probability.
+
+ // Explainable, rule-based offer checks. Pure TypeScript: no React, no DOM.
+ // Results are heuristic signals, never a guarantee or a fraud probability.
 
 export type Severity = "low" | "medium" | "high";
 export type Assessment = "low_concern" | "needs_review" | "high_concern";
@@ -53,6 +54,7 @@ const FREE_MAIL = [
   "yandex.com",
   "gmx.com",
 ];
+
 const SHORTENERS = [
   "bit.ly",
   "tinyurl.com",
@@ -64,6 +66,7 @@ const SHORTENERS = [
   "shorturl.at",
   "tiny.cc",
 ];
+
 const RISKY_TLDS = [
   ".xyz",
   ".top",
@@ -79,13 +82,18 @@ const RISKY_TLDS = [
 
 function findAll(text: string, re: RegExp): string[] {
   const out = new Set<string>();
-  for (const m of text.matchAll(re)) out.add(m[0].trim());
+
+  for (const match of text.matchAll(re)) {
+    out.add(match[0].trim());
+  }
+
   return [...out];
 }
 
 function firstGroup(text: string, re: RegExp): string | null {
-  const m = text.match(re);
-  const value = m?.[1]?.trim().replace(/[.,;]+$/, "");
+  const match = text.match(re);
+  const value = match?.[1]?.trim().replace(/[.,;]+$/, "");
+
   return !value ||
     /^(?:not (?:found|provided|stated|specified|available)|n\/?a|unknown|tbd|to be (?:confirmed|discussed)|[-–—]+)$/i.test(
       value,
@@ -96,6 +104,7 @@ function firstGroup(text: string, re: RegExp): string | null {
 
 const RECRUITER_PATTERN =
   /\b(?:recruiter(?:'s)?|recruitment(?:\s+team)?|talent\s+acquisition|hr\s+representative|hr\s+rep|hr\s+manager|hr\s+team|hr\s+department|human\s+resources|hr|hiring\s+contact|hiring\s+manager|hiring\s+team|contact\s+person|contact(?:\s+us)?|from|sender|sent\s+by)\b/i;
+
 const APPLICANT_PATTERN =
   /\b(?:applicant(?:'s)?|candidate(?:'s)?|recipient(?:'s)?)\b|\b(?:sent\s+)?to(?:\s*[:-]|(?=\s+[A-Z0-9._%+-]+@))/i;
 
@@ -107,6 +116,7 @@ export function classifyEmails(text: string, emails: string[]) {
 
   for (const match of matches) {
     if (match.index === undefined) continue;
+
     const email = match[0].toLowerCase();
     const start = match.index;
     const end = start + match[0].length;
@@ -119,33 +129,58 @@ export function classifyEmails(text: string, emails: string[]) {
     const sameLineAfter = text.slice(end, lineEnd);
 
     const prevEmailOnLine = [...sameLineBefore.matchAll(emailRegex)].at(-1);
+
     const effectiveBefore =
       prevEmailOnLine && prevEmailOnLine.index !== undefined
-        ? sameLineBefore.slice(prevEmailOnLine.index + prevEmailOnLine[0].length)
+        ? sameLineBefore.slice(
+            prevEmailOnLine.index + prevEmailOnLine[0].length,
+          )
         : sameLineBefore;
 
     const precedingLines: string[] = [];
     const linesBefore = text.slice(0, lineStart).split(/\r?\n/);
-    for (let i = linesBefore.length - 2; i >= 0 && precedingLines.length < 3; i--) {
-      const l = linesBefore[i] ?? "";
-      if (l.trim() === "") break;
-      if (/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(l)) break;
-      precedingLines.unshift(l);
+
+    for (
+      let i = linesBefore.length - 2;
+      i >= 0 && precedingLines.length < 3;
+      i--
+    ) {
+      const line = linesBefore[i] ?? "";
+
+      if (line.trim() === "") break;
+      if (/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(line)) break;
+
+      precedingLines.unshift(line);
     }
 
     const beforeContext = [...precedingLines, effectiveBefore].join("\n");
 
-    type LabelMatch = { role: "applicant" | "recruiter"; end: number };
+    type LabelMatch = {
+      role: "applicant" | "recruiter";
+      end: number;
+    };
+
     const beforeLabels: LabelMatch[] = [];
 
-    for (const m of beforeContext.matchAll(new RegExp(RECRUITER_PATTERN.source, "gi"))) {
-      if (m.index !== undefined) {
-        beforeLabels.push({ role: "recruiter", end: m.index + m[0].length });
+    for (const label of beforeContext.matchAll(
+      new RegExp(RECRUITER_PATTERN.source, "gi"),
+    )) {
+      if (label.index !== undefined) {
+        beforeLabels.push({
+          role: "recruiter",
+          end: label.index + label[0].length,
+        });
       }
     }
-    for (const m of beforeContext.matchAll(new RegExp(APPLICANT_PATTERN.source, "gi"))) {
-      if (m.index !== undefined) {
-        beforeLabels.push({ role: "applicant", end: m.index + m[0].length });
+
+    for (const label of beforeContext.matchAll(
+      new RegExp(APPLICANT_PATTERN.source, "gi"),
+    )) {
+      if (label.index !== undefined) {
+        beforeLabels.push({
+          role: "applicant",
+          end: label.index + label[0].length,
+        });
       }
     }
 
@@ -156,6 +191,7 @@ export function classifyEmails(text: string, emails: string[]) {
       detectedRole = beforeLabels.at(-1)?.role ?? null;
     } else {
       const nextEmailOnLine = sameLineAfter.match(emailRegex);
+
       const effectiveAfter =
         nextEmailOnLine && nextEmailOnLine.index !== undefined
           ? sameLineAfter.slice(0, nextEmailOnLine.index)
@@ -163,24 +199,45 @@ export function classifyEmails(text: string, emails: string[]) {
 
       const followingLines: string[] = [];
       const linesAfter = text.slice(lineEnd).split(/\r?\n/);
-      for (let i = 1; i < linesAfter.length && followingLines.length < 2; i++) {
-        const l = linesAfter[i] ?? "";
-        if (l.trim() === "") break;
-        if (/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(l)) break;
-        followingLines.push(l);
+
+      for (
+        let i = 1;
+        i < linesAfter.length && followingLines.length < 2;
+        i++
+      ) {
+        const line = linesAfter[i] ?? "";
+
+        if (line.trim() === "") break;
+        if (/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(line)) break;
+
+        followingLines.push(line);
       }
 
       const afterContext = [effectiveAfter, ...followingLines].join("\n");
-      const afterLabels: { role: "applicant" | "recruiter"; index: number }[] = [];
+      const afterLabels: {
+        role: "applicant" | "recruiter";
+        index: number;
+      }[] = [];
 
-      for (const m of afterContext.matchAll(new RegExp(RECRUITER_PATTERN.source, "gi"))) {
-        if (m.index !== undefined) {
-          afterLabels.push({ role: "recruiter", index: m.index });
+      for (const label of afterContext.matchAll(
+        new RegExp(RECRUITER_PATTERN.source, "gi"),
+      )) {
+        if (label.index !== undefined) {
+          afterLabels.push({
+            role: "recruiter",
+            index: label.index,
+          });
         }
       }
-      for (const m of afterContext.matchAll(new RegExp(APPLICANT_PATTERN.source, "gi"))) {
-        if (m.index !== undefined) {
-          afterLabels.push({ role: "applicant", index: m.index });
+
+      for (const label of afterContext.matchAll(
+        new RegExp(APPLICANT_PATTERN.source, "gi"),
+      )) {
+        if (label.index !== undefined) {
+          afterLabels.push({
+            role: "applicant",
+            index: label.index,
+          });
         }
       }
 
@@ -192,36 +249,50 @@ export function classifyEmails(text: string, emails: string[]) {
 
     if (detectedRole) {
       const set = roles.get(email) ?? new Set<"applicant" | "recruiter">();
+
       set.add(detectedRole);
       roles.set(email, set);
     }
   }
 
   const applicantEmails = emails.filter(
-    (e) => roles.get(e)?.size === 1 && roles.get(e)?.has("applicant"),
+    (email) =>
+      roles.get(email)?.size === 1 && roles.get(email)?.has("applicant"),
   );
+
   const recruiterEmails = emails.filter(
-    (e) => roles.get(e)?.size === 1 && roles.get(e)?.has("recruiter"),
+    (email) =>
+      roles.get(email)?.size === 1 && roles.get(email)?.has("recruiter"),
   );
+
   const unknownEmails = emails.filter(
-    (e) => !applicantEmails.includes(e) && !recruiterEmails.includes(e),
+    (email) =>
+      !applicantEmails.includes(email) && !recruiterEmails.includes(email),
   );
+
   return { applicantEmails, recruiterEmails, unknownEmails };
 }
 
 export function extract(text: string): Extracted {
-  const emails = findAll(text, /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi).map((e) =>
-    e.toLowerCase(),
-  );
-  const urls = findAll(text, /\b(?:https?:\/\/|www\.)[^\s<>"')]+/gi).map((u) =>
-    u.replace(/[.,;]+$/, ""),
-  );
+  const emails = findAll(
+    text,
+    /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
+  ).map((email) => email.toLowerCase());
+
+  const urls = findAll(
+    text,
+    /\b(?:https?:\/\/|www\.)[^\s<>"')]+/gi,
+  ).map((url) => url.replace(/[.,;]+$/, ""));
+
   const domains = new Set<string>();
-  emails.forEach((e) => domains.add(e.split("@")[1] ?? ""));
-  urls.forEach((u) => {
-    const h = hostOf(u);
-    if (h) domains.add(h);
+
+  emails.forEach((email) => domains.add(email.split("@")[1] ?? ""));
+
+  urls.forEach((url) => {
+    const host = hostOf(url);
+    if (host) domains.add(host);
   });
+
   return {
     company:
       firstGroup(
@@ -259,14 +330,14 @@ export function extract(text: string): Extracted {
     phones: findAll(
       text,
       /(?:\+\d{1,3}[\s-]?)?(?:\(?\d{3,5}\)?[\s-]?)\d{3,5}[\s-]?\d{3,5}/g,
-    ).filter((p) => p.replace(/\D/g, "").length >= 10),
+    ).filter((phone) => phone.replace(/\D/g, "").length >= 10),
   };
 }
 
-export function hostOf(u: string): string | null {
+export function hostOf(url: string): string | null {
   try {
-    return new URL(u.startsWith("http") ? u : `https://${u}`).hostname
-      .replace(/^www\./, "")
+    return new URL(url.startsWith("http") ? url : `https://${url}`)
+      .hostname.replace(/^www\./, "")
       .toLowerCase();
   } catch {
     return null;
@@ -275,26 +346,42 @@ export function hostOf(u: string): string | null {
 
 function rootDomain(host: string): string {
   const parts = host.split(".");
+
   if (
     parts.length > 2 &&
-    ["co", "com", "org", "net", "ac", "gov"].includes(parts[parts.length - 2] ?? "")
-  )
+    ["co", "com", "org", "net", "ac", "gov"].includes(
+      parts[parts.length - 2] ?? "",
+    )
+  ) {
     return parts.slice(-3).join(".");
+  }
+
   return parts.slice(-2).join(".");
 }
 
 function matchPhrases(text: string, patterns: RegExp[]): string[] {
   const out = new Set<string>();
-  for (const re of patterns) {
-    const g = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g");
-    for (const m of text.matchAll(g)) out.add(m[0]);
+
+  for (const pattern of patterns) {
+    const regex = new RegExp(
+      pattern.source,
+      pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`,
+    );
+
+    for (const match of text.matchAll(regex)) {
+      out.add(match[0]);
+    }
   }
+
   return [...out];
 }
 
 function paymentPhrases(text: string, patterns: RegExp[]): string[] {
   // Negation stays within its clause: a separate positive request must still be flagged.
-  const clauses = text.split(/\n|[;!?]|\.(?=\s|$)|\b(?:but|however|instead)\b/i);
+  const clauses = text.split(
+    /\n|[;!?]|\.(?=\s|$)|\b(?:but|however|instead)\b/i,
+  );
+
   return clauses.flatMap((clause) => {
     if (
       /\b(?:do(?:es)? not|don['’]t|never|not required to|no need to|will not|won['’]t)\b[^,]{0,60}\b(?:pay|deposit|transfer|send|forward)\b/i.test(
@@ -304,9 +391,13 @@ function paymentPhrases(text: string, patterns: RegExp[]): string[] {
       /\b(?:fees?|charges?|payments?)\s+(?:are\s+)?(?:not required|not payable|waived)\b/i.test(
         clause,
       ) ||
-      /\b(?:employer|company|we)\s+(?:will\s+)?(?:pay|cover|bear)\b/i.test(clause)
-    )
+      /\b(?:employer|company|we)\s+(?:will\s+)?(?:pay|cover|bear)\b/i.test(
+        clause,
+      )
+    ) {
       return [];
+    }
+
     return matchPhrases(clause, patterns);
   });
 }
@@ -317,20 +408,24 @@ const FEE = [
   /\b(?:deposit|transfer|send)\s+(?:the\s+)?(?:amount|money|fee)/i,
   /\bpay\s+(?:a\s+|the\s+)?fees?\b/i,
 ];
+
 const TRAINING = [
   /\b(?:training|onboarding|certification|laptop|equipment)\s+(?:fee|fees|cost|charges|payment)\b/i,
   /\bpay\s+for\s+(?:your\s+)?(?:training|laptop|certification)/i,
 ];
+
 const URGENCY = [
   /\bwithin\s+(?:24|48|12|2|6)\s*(?:hours|hrs)\b/i,
   /\b(?:immediately|urgent(?:ly)?|asap|today itself|last chance|limited (?:seats|slots)|offer expires)\b/i,
   /\bfailing which\b/i,
   /\bdo not share (?:this|with anyone)\b/i,
 ];
+
 const SENSITIVE = [
   /\b(?:aadhaar|aadhar|pan card|passport|ssn|social security)(?:\s+(?:number|copy|card))?\b/i,
-  /\b(?:bank account (?:number|details)|account number|ifsc|cvv|debit card|credit card|otp|upi pin|net ?banking password)\b/i,
+  /\b(?:bank account (?:number|details)|account number|ifsc|cvv|debit card|credit card|otp|upi pin|net ?banking password|password|pin)\b/i,
 ];
+
 const UNREALISTIC = [
   /\b(?:earn|salary of|make)\s+(?:₹|rs\.?|\$)?\s?[\d,]+\s*(?:per day|\/day|daily|a day)\b/i,
   /\bno (?:experience|interview|qualification)s? (?:required|needed)\b/i,
@@ -344,7 +439,8 @@ export function analyze(text: string): Report {
   const findings: Finding[] = [];
 
   const fee = paymentPhrases(t, FEE);
-  if (fee.length)
+
+  if (fee.length) {
     findings.push({
       id: "payment_request",
       name: "Payment or fee requested",
@@ -355,9 +451,11 @@ export function analyze(text: string): Report {
       action:
         "Do not pay. Contact the company through the phone or email listed on its official website and ask whether this fee is real.",
     });
+  }
 
   const training = paymentPhrases(t, TRAINING);
-  if (training.length)
+
+  if (training.length) {
     findings.push({
       id: "training_payment",
       name: "Training or equipment payment",
@@ -368,14 +466,17 @@ export function analyze(text: string): Report {
       action:
         "Ask for the company's written policy on training costs and confirm it with HR via an official channel before paying anything.",
     });
+  }
 
   const chequeDeposit = paymentPhrases(t, [
     /\b(?:deposit|cash)\s+(?:(?:this|the|a|your)\s+)?(?:cheque|check)\b/i,
   ]);
+
   const forwardMoney = paymentPhrases(t, [
     /\b(?:forward|send|transfer|wire)\s+(?:(?:the|remaining|remaining balance|some|excess)\s+)?(?:money|funds|balance|payment)\b[^\n.!?]{0,100}\b(?:vendor|supplier|third[- ]party)\b/i,
   ]);
-  if (chequeDeposit.length && forwardMoney.length)
+
+  if (chequeDeposit.length && forwardMoney.length) {
     findings.push({
       id: "cheque_fraud",
       name: "Potential cheque fraud",
@@ -386,9 +487,11 @@ export function analyze(text: string): Report {
       action:
         "Do not forward funds. Ask your bank to investigate the cheque and verify the request independently with the employer.",
     });
+  }
 
   const urgency = matchPhrases(t, URGENCY);
-  if (urgency.length)
+
+  if (urgency.length) {
     findings.push({
       id: "urgency",
       name: "Pressure or urgency language",
@@ -399,22 +502,33 @@ export function analyze(text: string): Report {
       action:
         "Take the time you need. Ask for a deadline extension; a genuine recruiter will rarely refuse.",
     });
+  }
 
+  // Updated sensitive-information severity classification.
   const sensitive = matchPhrases(t, SENSITIVE);
-  if (sensitive.length)
+
+  const highRiskSensitive = sensitive.filter((phrase) =>
+    /\b(?:otp|cvv|upi pin|pin|password|net ?banking password|debit card|credit card|bank account details)\b/i.test(
+      phrase,
+    ),
+  );
+
+  if (sensitive.length) {
     findings.push({
       id: "sensitive_info",
       name: "Sensitive information requested",
-      severity: sensitive.some((s) => /otp|cvv|pin|password|card/i.test(s)) ? "high" : "medium",
+      severity: highRiskSensitive.length > 0 ? "high" : "medium",
       evidence: sensitive,
       explanation:
-        "Identity documents and banking details can be misused. OTPs, PINs, CVVs and passwords should never be shared with anyone.",
+        "Requests for identity documents or financial information can carry privacy and fraud risks. Passwords, OTPs, PINs, and CVVs should never be shared with recruiters.",
       action:
-        "Share ID documents only after you have verified the employer, and only through their official HR portal. Never share OTPs or PINs.",
+        "Never share OTPs, PINs, CVVs, or passwords. Verify the employer independently before submitting identity documents, and use an official, secure HR channel.",
     });
+  }
 
   const unreal = matchPhrases(t, UNREALISTIC);
-  if (unreal.length)
+
+  if (unreal.length) {
     findings.push({
       id: "unrealistic_pay",
       name: "Unrealistic promises",
@@ -425,10 +539,14 @@ export function analyze(text: string): Report {
       action:
         "Compare the salary with published ranges for the same role and city on trusted job sites.",
     });
+  }
 
   const senderEmails = x.recruiterEmails ?? [];
-  const freeMail = senderEmails.filter((e) => FREE_MAIL.includes(e.split("@")[1] ?? ""));
-  if (freeMail.length)
+  const freeMail = senderEmails.filter((email) =>
+    FREE_MAIL.includes(email.split("@")[1] ?? ""),
+  );
+
+  if (freeMail.length) {
     findings.push({
       id: "personal_email",
       name: "Recruiter uses a personal email",
@@ -439,43 +557,63 @@ export function analyze(text: string): Report {
       action:
         "Find the company's official careers or HR email on its website and forward the offer there to confirm it.",
     });
+  }
 
   const employerDomains = [
-    ...senderEmails.map((e) => e.split("@")[1] ?? ""),
-    ...x.urls.map(hostOf).filter((d): d is string => !!d),
+    ...senderEmails.map((email) => email.split("@")[1] ?? ""),
+    ...x.urls.map(hostOf).filter((domain): domain is string => !!domain),
   ];
+
   const corpDomains = [
     ...new Set(
       employerDomains
-        .filter((d) => !FREE_MAIL.includes(d) && !SHORTENERS.includes(d))
+        .filter(
+          (domain) =>
+            !FREE_MAIL.includes(domain) && !SHORTENERS.includes(domain),
+        )
         .map(rootDomain),
     ),
   ];
+
   if (x.company && corpDomains.length) {
     const key = x.company
       .toLowerCase()
-      .replace(/(pvt|ltd|inc|llc|technologies|solutions|limited|corp(oration)?|[^a-z])/g, "");
+      .replace(
+        /(pvt|ltd|inc|llc|technologies|solutions|limited|corp(oration)?|[^a-z])/g,
+        "",
+      );
+
     const mismatched = corpDomains.filter(
-      (d) =>
+      (domain) =>
         key.length >= 3 &&
-        !d.replace(/[^a-z]/g, "").includes(key.slice(0, Math.min(5, key.length))),
+        !domain
+          .replace(/[^a-z]/g, "")
+          .includes(key.slice(0, Math.min(5, key.length))),
     );
-    if (mismatched.length && mismatched.length === corpDomains.length)
+
+    if (mismatched.length && mismatched.length === corpDomains.length) {
       findings.push({
         id: "domain_mismatch",
         name: "Company and domain don't match",
         severity: "medium",
-        evidence: [`Company: ${x.company}`, ...mismatched.map((d) => `Domain: ${d}`)],
+        evidence: [
+          `Company: ${x.company}`,
+          ...mismatched.map((domain) => `Domain: ${domain}`),
+        ],
         explanation:
           "The email or website domain does not resemble the company name. Scammers often use look-alike or unrelated domains.",
         action:
           "Search for the company's official website independently and compare its domain with the one in this offer.",
       });
+    }
   }
+
   if (
     corpDomains.length > 1 &&
-    new Set(senderEmails.map((e) => rootDomain(e.split("@")[1] ?? ""))).size > 1
-  )
+    new Set(
+      senderEmails.map((email) => rootDomain(email.split("@")[1] ?? "")),
+    ).size > 1
+  ) {
     findings.push({
       id: "multiple_domains",
       name: "Multiple sender domains",
@@ -485,18 +623,21 @@ export function analyze(text: string): Report {
         "The offer mentions emails from more than one domain, which can indicate an inconsistent or copied document.",
       action: "Confirm which domain the company actually uses.",
     });
+  }
 
-  const badLinks = x.urls.filter((u) => {
-    const h = hostOf(u) ?? "";
+  const badLinks = x.urls.filter((url) => {
+    const host = hostOf(url) ?? "";
+
     return (
-      SHORTENERS.includes(h) ||
-      RISKY_TLDS.some((tld) => h.endsWith(tld)) ||
-      /^\d+\.\d+\.\d+\.\d+$/.test(h) ||
-      u.startsWith("http://") ||
-      /(forms\.gle|docs\.google\.com\/forms|wa\.me|t\.me)/.test(u)
+      SHORTENERS.includes(host) ||
+      RISKY_TLDS.some((tld) => host.endsWith(tld)) ||
+      /^\d+\.\d+\.\d+\.\d+$/.test(host) ||
+      url.startsWith("http://") ||
+      /(forms\.gle|docs\.google\.com\/forms|wa\.me|t\.me)/.test(url)
     );
   });
-  if (badLinks.length)
+
+  if (badLinks.length) {
     findings.push({
       id: "suspicious_links",
       name: "Suspicious links",
@@ -507,45 +648,70 @@ export function analyze(text: string): Report {
       action:
         "Don't enter personal or payment details through these links. Navigate to the company's site by typing its address yourself.",
     });
+  }
 
   const missing: string[] = [];
+
   if (!x.company) missing.push("Company name");
   if (!x.jobTitle) missing.push("Job title");
   if (!x.salary) missing.push("Salary / stipend");
   if (!x.location) missing.push("Work location");
-  if (!x.emails.length && !x.phones.length) missing.push("Contact details");
-  if (missing.length >= 2)
+
+  if (!x.emails.length && !x.phones.length) {
+    missing.push("Contact details");
+  }
+
+  if (missing.length >= 2) {
     findings.push({
       id: "missing_details",
       name: "Missing key details",
       severity: missing.length >= 4 ? "medium" : "low",
-      evidence: missing.map((m) => `Not found: ${m}`),
+      evidence: missing.map((detail) => `Not found: ${detail}`),
       explanation:
         "Formal offers normally state the employer, role, pay, location and contact details. Vague offers are harder to verify.",
       action:
         "Ask the recruiter for a formal offer letter that includes these details on company letterhead.",
     });
+  }
 
+  // Scoring: low = 1, medium = 3, high = 6.
   const weight = { low: 1, medium: 3, high: 6 } as const;
-  const points = findings.reduce((s, f) => s + weight[f.severity], 0);
+
+  const points = findings.reduce(
+    (total, finding) => total + weight[finding.severity],
+    0,
+  );
+
+  // Final assessment: any finding requires review; serious findings raise concern.
+  const hasHighSeverityFinding = findings.some(
+    (finding) => finding.severity === "high",
+  );
+
   const assessment: Assessment =
-    findings.some((f) => f.severity === "high") || points >= 8
+    hasHighSeverityFinding || points >= 8
       ? "high_concern"
-      : points >= 3
+      : findings.length > 0
         ? "needs_review"
         : "low_concern";
+
   const phrases = [
     ...new Set(
       findings
-        .filter((f) => !["missing_details", "domain_mismatch"].includes(f.id))
-        .flatMap((f) => f.evidence),
+        .filter(
+          (finding) =>
+            !["missing_details", "domain_mismatch"].includes(finding.id),
+        )
+        .flatMap((finding) => finding.evidence),
     ),
   ];
 
   return { assessment, points, findings, extracted: x, phrases };
 }
 
-export const ASSESSMENT_META: Record<Assessment, { label: string; summary: string }> = {
+export const ASSESSMENT_META: Record<
+  Assessment,
+  { label: string; summary: string }
+> = {
   low_concern: {
     label: "Low Concern",
     summary:
