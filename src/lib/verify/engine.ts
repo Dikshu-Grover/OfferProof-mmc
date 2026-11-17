@@ -252,12 +252,12 @@ export function classifyEmails(text: string, emails: string[]) {
 }
 
 export function extract(text: string): Extracted {
-  const emails = findAll(text, /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi).map(
-    (email) => email.toLowerCase(),
+  const emails = findAll(text, /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi).map((email) =>
+    email.toLowerCase(),
   );
 
-  const urls = findAll(text, /\b(?:https?:\/\/|www\.)[^\s<>"')]+/gi).map(
-    (url) => url.replace(/[.,;]+$/, ""),
+  const urls = findAll(text, /\b(?:https?:\/\/|www\.)[^\s<>"')]+/gi).map((url) =>
+    url.replace(/[.,;]+$/, ""),
   );
 
   const domains = new Set<string>();
@@ -313,7 +313,6 @@ export function extract(text: string): Extracted {
 export function hostOf(url: string): string | null {
   try {
     return new URL(url.startsWith("http") ? url : `https://${url}`)
-      
       .hostname.replace(/^www\./, "")
       .toLowerCase();
   } catch {
