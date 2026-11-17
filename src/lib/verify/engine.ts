@@ -131,19 +131,13 @@ export function classifyEmails(text: string, emails: string[]) {
 
     const effectiveBefore =
       prevEmailOnLine && prevEmailOnLine.index !== undefined
-        ? sameLineBefore.slice(
-            prevEmailOnLine.index + prevEmailOnLine[0].length,
-          )
+        ? sameLineBefore.slice(prevEmailOnLine.index + prevEmailOnLine[0].length)
         : sameLineBefore;
 
     const precedingLines: string[] = [];
     const linesBefore = text.slice(0, lineStart).split(/\r?\n/);
 
-    for (
-      let i = linesBefore.length - 2;
-      i >= 0 && precedingLines.length < 3;
-      i--
-    ) {
+    for (let i = linesBefore.length - 2; i >= 0 && precedingLines.length < 3; i--) {
       const line = linesBefore[i] ?? "";
 
       if (line.trim() === "") break;
@@ -161,9 +155,7 @@ export function classifyEmails(text: string, emails: string[]) {
 
     const beforeLabels: LabelMatch[] = [];
 
-    for (const label of beforeContext.matchAll(
-      new RegExp(RECRUITER_PATTERN.source, "gi"),
-    )) {
+    for (const label of beforeContext.matchAll(new RegExp(RECRUITER_PATTERN.source, "gi"))) {
       if (label.index !== undefined) {
         beforeLabels.push({
           role: "recruiter",
@@ -172,9 +164,7 @@ export function classifyEmails(text: string, emails: string[]) {
       }
     }
 
-    for (const label of beforeContext.matchAll(
-      new RegExp(APPLICANT_PATTERN.source, "gi"),
-    )) {
+    for (const label of beforeContext.matchAll(new RegExp(APPLICANT_PATTERN.source, "gi"))) {
       if (label.index !== undefined) {
         beforeLabels.push({
           role: "applicant",
@@ -199,11 +189,7 @@ export function classifyEmails(text: string, emails: string[]) {
       const followingLines: string[] = [];
       const linesAfter = text.slice(lineEnd).split(/\r?\n/);
 
-      for (
-        let i = 1;
-        i < linesAfter.length && followingLines.length < 2;
-        i++
-      ) {
+      for (let i = 1; i < linesAfter.length && followingLines.length < 2; i++) {
         const line = linesAfter[i] ?? "";
 
         if (line.trim() === "") break;
@@ -218,9 +204,7 @@ export function classifyEmails(text: string, emails: string[]) {
         index: number;
       }[] = [];
 
-      for (const label of afterContext.matchAll(
-        new RegExp(RECRUITER_PATTERN.source, "gi"),
-      )) {
+      for (const label of afterContext.matchAll(new RegExp(RECRUITER_PATTERN.source, "gi"))) {
         if (label.index !== undefined) {
           afterLabels.push({
             role: "recruiter",
@@ -229,9 +213,7 @@ export function classifyEmails(text: string, emails: string[]) {
         }
       }
 
-      for (const label of afterContext.matchAll(
-        new RegExp(APPLICANT_PATTERN.source, "gi"),
-      )) {
+      for (const label of afterContext.matchAll(new RegExp(APPLICANT_PATTERN.source, "gi"))) {
         if (label.index !== undefined) {
           afterLabels.push({
             role: "applicant",
@@ -255,33 +237,28 @@ export function classifyEmails(text: string, emails: string[]) {
   }
 
   const applicantEmails = emails.filter(
-    (email) =>
-      roles.get(email)?.size === 1 && roles.get(email)?.has("applicant"),
+    (email) => roles.get(email)?.size === 1 && roles.get(email)?.has("applicant"),
   );
 
   const recruiterEmails = emails.filter(
-    (email) =>
-      roles.get(email)?.size === 1 && roles.get(email)?.has("recruiter"),
+    (email) => roles.get(email)?.size === 1 && roles.get(email)?.has("recruiter"),
   );
 
   const unknownEmails = emails.filter(
-    (email) =>
-      !applicantEmails.includes(email) && !recruiterEmails.includes(email),
+    (email) => !applicantEmails.includes(email) && !recruiterEmails.includes(email),
   );
 
   return { applicantEmails, recruiterEmails, unknownEmails };
 }
 
 export function extract(text: string): Extracted {
-  const emails = findAll(
-    text,
-    /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
-  ).map((email) => email.toLowerCase());
+  const emails = findAll(text, /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi).map(
+    (email) => email.toLowerCase(),
+  );
 
-  const urls = findAll(
-    text,
-    /\b(?:https?:\/\/|www\.)[^\s<>"')]+/gi,
-  ).map((url) => url.replace(/[.,;]+$/, ""));
+  const urls = findAll(text, /\b(?:https?:\/\/|www\.)[^\s<>"')]+/gi).map(
+    (url) => url.replace(/[.,;]+$/, ""),
+  );
 
   const domains = new Set<string>();
 
@@ -336,6 +313,7 @@ export function extract(text: string): Extracted {
 export function hostOf(url: string): string | null {
   try {
     return new URL(url.startsWith("http") ? url : `https://${url}`)
+      
       .hostname.replace(/^www\./, "")
       .toLowerCase();
   } catch {
@@ -348,9 +326,7 @@ function rootDomain(host: string): string {
 
   if (
     parts.length > 2 &&
-    ["co", "com", "org", "net", "ac", "gov"].includes(
-      parts[parts.length - 2] ?? "",
-    )
+    ["co", "com", "org", "net", "ac", "gov"].includes(parts[parts.length - 2] ?? "")
   ) {
     return parts.slice(-3).join(".");
   }
@@ -377,9 +353,7 @@ function matchPhrases(text: string, patterns: RegExp[]): string[] {
 
 function paymentPhrases(text: string, patterns: RegExp[]): string[] {
   // Negation stays within its clause: a separate positive request must still be flagged.
-  const clauses = text.split(
-    /\n|[;!?]|\.(?=\s|$)|\b(?:but|however|instead)\b/i,
-  );
+  const clauses = text.split(/\n|[;!?]|\.(?=\s|$)|\b(?:but|however|instead)\b/i);
 
   return clauses.flatMap((clause) => {
     if (
@@ -390,9 +364,7 @@ function paymentPhrases(text: string, patterns: RegExp[]): string[] {
       /\b(?:fees?|charges?|payments?)\s+(?:are\s+)?(?:not required|not payable|waived)\b/i.test(
         clause,
       ) ||
-      /\b(?:employer|company|we)\s+(?:will\s+)?(?:pay|cover|bear)\b/i.test(
-        clause,
-      )
+      /\b(?:employer|company|we)\s+(?:will\s+)?(?:pay|cover|bear)\b/i.test(clause)
     ) {
       return [];
     }
@@ -543,9 +515,7 @@ export function analyze(text: string): Report {
   }
 
   const senderEmails = x.recruiterEmails ?? [];
-  const freeMail = senderEmails.filter((email) =>
-    FREE_MAIL.includes(email.split("@")[1] ?? ""),
-  );
+  const freeMail = senderEmails.filter((email) => FREE_MAIL.includes(email.split("@")[1] ?? ""));
 
   if (freeMail.length) {
     findings.push({
@@ -568,10 +538,7 @@ export function analyze(text: string): Report {
   const corpDomains = [
     ...new Set(
       employerDomains
-        .filter(
-          (domain) =>
-            !FREE_MAIL.includes(domain) && !SHORTENERS.includes(domain),
-        )
+        .filter((domain) => !FREE_MAIL.includes(domain) && !SHORTENERS.includes(domain))
         .map(rootDomain),
     ),
   ];
@@ -579,17 +546,12 @@ export function analyze(text: string): Report {
   if (x.company && corpDomains.length) {
     const key = x.company
       .toLowerCase()
-      .replace(
-        /(pvt|ltd|inc|llc|technologies|solutions|limited|corp(oration)?|[^a-z])/g,
-        "",
-      );
+      .replace(/(pvt|ltd|inc|llc|technologies|solutions|limited|corp(oration)?|[^a-z])/g, "");
 
     const mismatched = corpDomains.filter(
       (domain) =>
         key.length >= 3 &&
-        !domain
-          .replace(/[^a-z]/g, "")
-          .includes(key.slice(0, Math.min(5, key.length))),
+        !domain.replace(/[^a-z]/g, "").includes(key.slice(0, Math.min(5, key.length))),
     );
 
     if (mismatched.length && mismatched.length === corpDomains.length) {
@@ -597,10 +559,7 @@ export function analyze(text: string): Report {
         id: "domain_mismatch",
         name: "Company and domain don't match",
         severity: "medium",
-        evidence: [
-          `Company: ${x.company}`,
-          ...mismatched.map((domain) => `Domain: ${domain}`),
-        ],
+        evidence: [`Company: ${x.company}`, ...mismatched.map((domain) => `Domain: ${domain}`)],
         explanation:
           "The email or website domain does not resemble the company name. Scammers often use look-alike or unrelated domains.",
         action:
@@ -611,9 +570,7 @@ export function analyze(text: string): Report {
 
   if (
     corpDomains.length > 1 &&
-    new Set(
-      senderEmails.map((email) => rootDomain(email.split("@")[1] ?? "")),
-    ).size > 1
+    new Set(senderEmails.map((email) => rootDomain(email.split("@")[1] ?? ""))).size > 1
   ) {
     findings.push({
       id: "multiple_domains",
@@ -678,15 +635,10 @@ export function analyze(text: string): Report {
   // Scoring: low = 1, medium = 3, high = 6.
   const weight = { low: 1, medium: 3, high: 6 } as const;
 
-  const points = findings.reduce(
-    (total, finding) => total + weight[finding.severity],
-    0,
-  );
+  const points = findings.reduce((total, finding) => total + weight[finding.severity], 0);
 
   // Final assessment: any finding requires review; serious findings raise concern.
-  const hasHighSeverityFinding = findings.some(
-    (finding) => finding.severity === "high",
-  );
+  const hasHighSeverityFinding = findings.some((finding) => finding.severity === "high");
 
   const assessment: Assessment =
     hasHighSeverityFinding || points >= 8
@@ -698,10 +650,7 @@ export function analyze(text: string): Report {
   const phrases = [
     ...new Set(
       findings
-        .filter(
-          (finding) =>
-            !["missing_details", "domain_mismatch"].includes(finding.id),
-        )
+        .filter((finding) => !["missing_details", "domain_mismatch"].includes(finding.id))
         .flatMap((finding) => finding.evidence),
     ),
   ];
@@ -709,10 +658,7 @@ export function analyze(text: string): Report {
   return { assessment, points, findings, extracted: x, phrases };
 }
 
-export const ASSESSMENT_META: Record<
-  Assessment,
-  { label: string; summary: string }
-> = {
+export const ASSESSMENT_META: Record<Assessment, { label: string; summary: string }> = {
   low_concern: {
     label: "Low Concern",
     summary:
