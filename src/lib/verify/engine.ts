@@ -407,6 +407,9 @@ const FEE = [
   /\bpay(?:ment)?\s+(?:of\s+)?(?:₹|rs\.?|inr|\$|usd)\s?[\d,]+/i,
   /\b(?:deposit|transfer|send)\s+(?:the\s+)?(?:amount|money|fee)/i,
   /\bpay\s+(?:a\s+|the\s+)?fees?\b/i,
+ 
+  /\bmandatory\s+(?:processing|registration|activation|verification|employment)\s+(?:and\s+\w+\s+)?(?:fee|fees|charge|charges)\b/i,
+
 ];
 
 const TRAINING = [
@@ -419,6 +422,8 @@ const URGENCY = [
   /\b(?:immediately|urgent(?:ly)?|asap|today itself|last chance|limited (?:seats|slots)|offer expires)\b/i,
   /\bfailing which\b/i,
   /\bdo not share (?:this|with anyone)\b/i,
+  /\bwithin\s+(?:24|48|72|12|2|6)\s*(?:hours|hrs)\b/i,
+
 ];
 
 const SENSITIVE = [
