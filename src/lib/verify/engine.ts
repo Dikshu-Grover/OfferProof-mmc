@@ -1,6 +1,5 @@
-
- // Explainable, rule-based offer checks. Pure TypeScript: no React, no DOM.
- // Results are heuristic signals, never a guarantee or a fraud probability.
+// Explainable, rule-based offer checks. Pure TypeScript: no React, no DOM.
+// Results are heuristic signals, never a guarantee or a fraud probability.
 
 export type Severity = "low" | "medium" | "high";
 export type Assessment = "low_concern" | "needs_review" | "high_concern";
@@ -95,7 +94,7 @@ function firstGroup(text: string, re: RegExp): string | null {
   const value = match?.[1]?.trim().replace(/[.,;]+$/, "");
 
   return !value ||
-    /^(?:not (?:found|provided|stated|specified|available)|n\/?a|unknown|tbd|to be (?:confirmed|discussed)|[-–—]+)$/i.test(
+    /^(?:not (?:found|provided|stated|specified|available)|n/?a|unknown|tbd|to be (?:confirmed|discussed)|[-–—]+)$/i.test(
       value,
     )
     ? null
@@ -103,7 +102,7 @@ function firstGroup(text: string, re: RegExp): string | null {
 }
 
 const RECRUITER_PATTERN =
-  /\b(?:recruiter(?:'s)?|recruitment(?:\s+team)?|talent\s+acquisition|hr\s+representative|hr\s+rep|hr\s+manager|hr\s+team|hr\s+department|human\s+resources|hr|hiring\s+contact|hiring\s+manager|hiring\s+team|contact\s+person|contact(?:\s+us)?|from|sender|sent\s+by)\b/i;
+  /\b(?:recruiter(?:'s)?|recruitment(?:\s+team)?|talent\s+acquisition|hr\s+representative|hr\s+rep|hr\s+manager|hr\s+team|hr\s+department|human\s+resources|hr|hiring\s+contact|hiring\s+manager|hiring\s+team|recruiting\s+team|talent\s+team|careers(?:\s+team)?|job\s+offer(?:\s+team)?|interview(?:\s+team)?)/i;
 
 const APPLICANT_PATTERN =
   /\b(?:applicant(?:'s)?|candidate(?:'s)?|recipient(?:'s)?)\b|\b(?:sent\s+)?to(?:\s*[:-]|(?=\s+[A-Z0-9._%+-]+@))/i;
@@ -200,11 +199,7 @@ export function classifyEmails(text: string, emails: string[]) {
       const followingLines: string[] = [];
       const linesAfter = text.slice(lineEnd).split(/\r?\n/);
 
-      for (
-        let i = 1;
-        i < linesAfter.length && followingLines.length < 2;
-        i++
-      ) {
+      for (let i = 1; i < linesAfter.length && followingLines.length < 2; i++) {
         const line = linesAfter[i] ?? "";
 
         if (line.trim() === "") break;
@@ -305,7 +300,7 @@ export function extract(text: string): Extracted {
       ),
     recruiter: firstGroup(
       text,
-      /(?:[Rr]egards|[Ss]incerely|[Rr]ecruiter|HR [Mm]anager|[Hh]iring [Mm]anager)\s*[,:-]?\s*\n?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/,
+      /(?:[Rr]egards|[Ss]incerely|[Rr]ecruiter|HR [Mm]anager|[Hh]iring [Mm]anager)\s*[:,-]?\s*\n?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/,
     ),
     jobTitle: firstGroup(
       text,
@@ -313,7 +308,7 @@ export function extract(text: string): Extracted {
     ),
     salary: firstGroup(
       text,
-      /\b(?:salary|stipend|ctc|compensation|package|pay)\b\s*(?:of|is)?\s*[:-]?\s*((?:(?:₹|rs\.?|inr|\$|usd|£|€|gbp|eur)\s*)?\d[\d,]*(?:\.\d+)?(?:[ \t]*(?:inr|usd|gbp|eur))?(?:\s*(?:per\s+(?:year|annum|month|week|day|hour)|annual(?:ly)?|monthly|lpa))?[^\n;]{0,40})/i,
+      /\b(?:salary|stipend|ctc|compensation|package|pay)\b\s*(?:of|is)?\s*[:-]?\s*((?:(?:₹|rs\.?|inr|\$|usd|£|€|gbp|eur)\s*)?\d[\d,]*(?:\.\d+)?(?:[ \t]*(?:inr|usd|gbp|eur))?(?:\s*(?:per\s+(?:month|annum|year|day|hr|hour|week))?)?)/i,
     ),
     joiningDate: firstGroup(
       text,
@@ -378,9 +373,7 @@ function matchPhrases(text: string, patterns: RegExp[]): string[] {
 
 function paymentPhrases(text: string, patterns: RegExp[]): string[] {
   // Negation stays within its clause: a separate positive request must still be flagged.
-  const clauses = text.split(
-    /\n|[;!?]|\.(?=\s|$)|\b(?:but|however|instead)\b/i,
-  );
+  const clauses = text.split(/\n|[;!?]|\.(?=\s|$)|\b(?:but|however|instead)\b/i);
 
   return clauses.flatMap((clause) => {
     if (
@@ -407,9 +400,7 @@ const FEE = [
   /\bpay(?:ment)?\s+(?:of\s+)?(?:₹|rs\.?|inr|\$|usd)\s?[\d,]+/i,
   /\b(?:deposit|transfer|send)\s+(?:the\s+)?(?:amount|money|fee)/i,
   /\bpay\s+(?:a\s+|the\s+)?fees?\b/i,
- 
   /\bmandatory\s+(?:processing|registration|activation|verification|employment)\s+(?:and\s+\w+\s+)?(?:fee|fees|charge|charges)\b/i,
-
 ];
 
 const TRAINING = [
@@ -423,7 +414,6 @@ const URGENCY = [
   /\bfailing which\b/i,
   /\bdo not share (?:this|with anyone)\b/i,
   /\bwithin\s+(?:24|48|72|12|2|6)\s*(?:hours|hrs)\b/i,
-
 ];
 
 const SENSITIVE = [
@@ -488,7 +478,7 @@ export function analyze(text: string): Report {
       severity: "high",
       evidence: [...chequeDeposit, ...forwardMoney],
       explanation:
-        "A request to deposit a cheque and forward funds to a vendor is a fake-cheque scam pattern. Funds may appear available before the bank discovers the cheque is invalid; this is a warning, not proof of fraud.",
+        "A request to deposit a cheque and forward funds to a vendor is a fake-cheque scam pattern. Funds may appear available before the bank discovers the cheque is invalid; this is a warning sign of fraud.",
       action:
         "Do not forward funds. Ask your bank to investigate the cheque and verify the request independently with the employer.",
     });
