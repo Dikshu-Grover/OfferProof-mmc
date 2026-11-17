@@ -1,6 +1,5 @@
-
- // Explainable, rule-based offer checks. Pure TypeScript: no React, no DOM.
- // Results are heuristic signals, never a guarantee or a fraud probability.
+// Explainable, rule-based offer checks. Pure TypeScript: no React, no DOM.
+// Results are heuristic signals, never a guarantee or a fraud probability.
 
 export type Severity = "low" | "medium" | "high";
 export type Assessment = "low_concern" | "needs_review" | "high_concern";
@@ -408,7 +407,6 @@ const FEE = [
   /\b(?:deposit|transfer|send)\s+(?:the\s+)?(?:amount|money|fee)/i,
   /\bpay\s+(?:a\s+|the\s+)?fees?\b/i,
   /\bmandatory\s+(?:processing|registration|activation|verification|employment)\s+(?:and\s+\w+\s+)?(?:fee|fees|charge|charges)\b/i,
-
 ];
 
 const TRAINING = [
@@ -422,7 +420,6 @@ const URGENCY = [
   /\bfailing which\b/i,
   /\bdo not share (?:this|with anyone)\b/i,
   /\bwithin\s+(?:24|48|72|12|2|6)\s*(?:hours|hrs)\b/i,
-
 ];
 
 const SENSITIVE = [
