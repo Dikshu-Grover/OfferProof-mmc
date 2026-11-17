@@ -631,26 +631,19 @@ export function analyze(text: string): Report {
     });
   }
 
-  // Scoring: low = 1, medium = 3, high = 6.
   const weight = { low: 1, medium: 3, high: 6 } as const;
-
-  const points = findings.reduce((total, finding) => total + weight[finding.severity], 0);
-
-  // Final assessment: any finding requires review; serious findings raise concern.
-  const hasHighSeverityFinding = findings.some((finding) => finding.severity === "high");
-
+  const points = findings.reduce((s, f) => s + weight[f.severity], 0);
   const assessment: Assessment =
-    hasHighSeverityFinding || points >= 8
+    findings.some((f) => f.severity === "high") || points >= 8
       ? "high_concern"
-      : findings.length > 0
+      : points >= 3
         ? "needs_review"
         : "low_concern";
-
   const phrases = [
     ...new Set(
       findings
-        .filter((finding) => !["missing_details", "domain_mismatch"].includes(finding.id))
-        .flatMap((finding) => finding.evidence),
+        .filter((f) => !["missing_details", "domain_mismatch"].includes(f.id))
+        .flatMap((f) => f.evidence),
     ),
   ];
 
