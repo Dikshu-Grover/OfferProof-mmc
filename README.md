@@ -214,12 +214,60 @@ sequenceDiagram
 
 ## 8. Google Cloud Integration
 
-OfferProof uses **Google Cloud BigQuery** as its threat-intelligence data layer.
+OfferProof integrates **Google Cloud BigQuery** as its threat-intelligence data layer to analyze historical job postings and help users identify patterns associated with fraudulent and legitimate job offers.
 
-- **Dataset:** [xenon-hub-514707-f9.offerproof_analytics.job_postings](https://github.com/user-attachments/assets/59e97067-63ad-44a5-af85-03c19856ecea)
-- **Access pattern:** the browser never talks to BigQuery directly. The `offerproof-job-postings` Supabase Edge Function authenticates to Google Cloud using a **service account** and a signed **RS256 JWT** exchanged through Google OAuth2, then runs filtered queries on behalf of the app.
-- **Feature enabled:** the **Scam Awareness Centre**, where users explore real-world patterns in fraudulent versus legitimate postings with instant filtering.
-- **Secret handling:** the service-account credentials are stored as an Edge Function secret (`GOOGLE_SERVICE_ACCOUNT_JSON`) and are never exposed to the client.
+### Dataset and Data Analytics
+
+- **Google Cloud Project:** `xenon-hub-514707-f9`
+- **BigQuery Dataset:** `offerproof_analytics`
+- **Table:** `job_postings`
+- **Region:** `asia-south1`
+- **Total Records:** 17,880 historical job postings
+- **Legitimate Postings:** 17,014 (95.2%)
+- **Fraudulent Postings:** 866 (4.84%)
+
+The dataset powers the Job Postings Analytics interface, where users can explore historical job listings and compare legitimate postings with listings flagged as potentially fraudulent.
+
+### Scam Awareness Centre
+
+The BigQuery integration powers the **Scam Awareness Centre**, providing users with an interactive view of historical job-posting data.
+
+Key features include:
+
+- **Live Data Preview:** Displays job-posting analytics retrieved from the BigQuery dataset.
+- **Search and Filtering:** Allows users to search postings by job title, company, industry, or description.
+- **Fraud Classification Filters:** Enables users to view all postings or filter the results by legitimate and fraudulent classifications.
+- **Detailed Job Listings:** Provides expandable job cards containing additional information about individual postings.
+- **Dataset Statistics:** Displays record counts and the distribution of legitimate and flagged fraudulent postings.
+
+These features help users understand common job-scam patterns and make more informed decisions when evaluating employment opportunities.
+
+### Backend Integration and Authentication
+
+The application uses a **Supabase Edge Function** named `offerproof-job-postings` as a secure intermediary between the frontend and Google Cloud BigQuery.
+
+The request flow is:
+
+1. The frontend requests job-posting data from the Supabase Edge Function.
+2. The Edge Function authenticates with Google Cloud using a service account.
+3. It uses a signed RS256 JWT exchanged through Google OAuth 2.0 to obtain authorization.
+4. The function executes filtered BigQuery queries and returns the results to the application.
+5. The frontend displays the retrieved records and updates the analytics interface according to the selected filters.
+
+This architecture keeps Google Cloud authentication and database access on the server side rather than exposing them directly to the browser.
+
+### Security and Secret Management
+
+- **Server-Side Credentials:** The service-account credentials are stored as the Supabase Edge Function secret `GOOGLE_SERVICE_ACCOUNT_JSON`.
+- **Credential Protection:** Sensitive Google Cloud credentials are not exposed to the frontend.
+- **Controlled Data Access:** BigQuery queries are executed through the backend function instead of allowing direct browser access.
+- **Filtered Queries:** The backend retrieves records according to the requested filters, supporting the application's search and browsing functionality.
+
+### Role of BigQuery in OfferProof
+
+BigQuery complements OfferProof's rule-based job-offer assessment system by providing a dataset of historical job postings for exploration and awareness. While the rule-based assessment evaluates warning signs in an offer, the Scam Awareness Centre allows users to investigate broader patterns across historical listings.
+
+**Note:** Historical dataset classifications are intended to support awareness and investigation. A classification alone does not guarantee that a job posting is genuine or fraudulent.
 
 ---
 
