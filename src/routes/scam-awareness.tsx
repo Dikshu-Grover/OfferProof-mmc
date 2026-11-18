@@ -506,8 +506,7 @@ function Awareness() {
   return (
     <>
       <PageHero eyebrow="Scam Awareness Centre" title="Know the patterns.">
-        Most job scams follow a few predictable scripts. Here's how to recognise them. All examples
-        are fictional.
+        Most job scams follow a few predictable scripts. Here's how to recognise them. 
       </PageHero>
 
       <div className="mx-auto max-w-5xl px-4 pt-8 sm:px-6">
