@@ -427,8 +427,8 @@ Coverage areas include the fraud-detection rules (including negation handling), 
 | Ingestion workspace (`/verify`)             | `<ADD SCREENSHOT>` |
 | Results dashboard with highlighted evidence | `<ADD SCREENSHOT>` |
 | AI recommendations panel                    | `<ADD SCREENSHOT>` |
-| Offer comparison                            | `<ADD SCREENSHOT>` |
-| Scam Awareness Centre                       | `<ADD SCREENSHOT>` |
+| Offer comparison                            | [Offer Comparison](https://github.com/user-attachments/assets/6003a112-b99c-4211-bf9d-1e0eb3b8fc12) |
+| Scam Awareness Centre                       | [Scam Awareness](https://github.com/user-attachments/assets/a05ab39d-ff03-4a78-88a0-0c0b98b6a071)   |
 | BigQuery Dataset                            | [Big Query](https://github.com/user-attachments/assets/05cd8182-97f7-4ede-85a9-155882668005) |
 
 **Recorded walkthrough (up to 5 minutes):** `<ADD LINK>`
