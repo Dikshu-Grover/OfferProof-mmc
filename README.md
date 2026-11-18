@@ -1,4 +1,4 @@
-<img width="1439" height="738" alt="Screenshot 2026-11-18 at 11 45 37 AM" src="https://github.com/user-attachments/assets/2793541c-e190-412f-bc76-604502b725ab" /><div align="center">
+
 
 # OfferProof
 
