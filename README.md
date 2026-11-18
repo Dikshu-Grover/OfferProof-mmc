@@ -432,6 +432,7 @@ Coverage areas include the fraud-detection rules (including negation handling), 
 | BigQuery Dataset                            | [Big Query](https://github.com/user-attachments/assets/05cd8182-97f7-4ede-85a9-155882668005) |
 
 **Recorded walkthrough (up to 5 minutes):** `<ADD LINK>`
+
 **Presentation deck (up to 8 slides):** [Presentation](https://github.com/user-attachments/files/35011109/OfferProof.pptx)
 
 
