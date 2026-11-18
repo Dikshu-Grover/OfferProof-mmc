@@ -1,4 +1,4 @@
-<div align="center">
+<img width="1439" height="738" alt="Screenshot 2026-11-18 at 11 45 37 AM" src="https://github.com/user-attachments/assets/2793541c-e190-412f-bc76-604502b725ab" /><div align="center">
 
 # OfferProof
 
@@ -419,20 +419,24 @@ Coverage areas include the fraud-detection rules (including negation handling), 
 
 ---
 
-## 15. Screenshots and Demo
+## 15. Screenshots 
 
 | View                                        | Screenshot         |
 | ------------------------------------------- | ------------------ |
-| Landing page                                | `<ADD SCREENSHOT>` |
-| Ingestion workspace (`/verify`)             | `<ADD SCREENSHOT>` |
-| Results dashboard with highlighted evidence | `<ADD SCREENSHOT>` |
-| AI recommendations panel                    | `<ADD SCREENSHOT>` |
-| Offer comparison                            | `<ADD SCREENSHOT>` |
-| Scam Awareness Centre                       | `<ADD SCREENSHOT>` |
+| Landing page                                | [Home page](https://github.com/user-attachments/assets/b9ff2483-6e9f-44e5-840c-ffb88ccb7c66)
+ |
+| Ingestion workspace (`/verify`)             | [Verify](https://github.com/user-attachments/assets/9c433f5a-f433-405f-92f3-afd93c28a5d0)
+ |
+| Results dashboard with highlighted evidence | [Results](https://github.com/user-attachments/assets/913f6938-57ec-46a2-8b1d-b55b711f4690)
+ |
+| AI recommendations panel                    | [AI Recommendation](https://github.com/user-attachments/assets/dbf29d36-7d40-44da-80f2-426ec06c122b)
+ |
+| Offer comparison                            | [Offer Comparison](https://github.com/user-attachments/assets/af3d0c39-5757-4744-8ddb-bd806950ad48)
+ |
+| Scam Awareness Centre                       | [Scam Awareness](https://github.com/user-attachments/assets/7a37be71-1f52-4d57-a386-930bc8311a52)
+ |
 | BigQuery Dataset                            | [Big Query](https://github.com/user-attachments/assets/05cd8182-97f7-4ede-85a9-155882668005) |
 
-**Recorded walkthrough (up to 5 minutes):** `<ADD LINK>`
-**Presentation deck (up to 8 slides):** `<ADD LINK>`
 
 ---
 
