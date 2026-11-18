@@ -423,10 +423,10 @@ Coverage areas include the fraud-detection rules (including negation handling), 
 
 | View                                        | Screenshot         |
 | ------------------------------------------- | ------------------ |
-| Landing page                                | `<ADD SCREENSHOT>` |
-| Ingestion workspace (`/verify`)             | `<ADD SCREENSHOT>` |
-| Results dashboard with highlighted evidence | `<ADD SCREENSHOT>` |
-| AI recommendations panel                    | `<ADD SCREENSHOT>` |
+| Landing page                                | [Landing Page](https://github.com/user-attachments/assets/30fa1672-06ed-410b-ac48-16964bb7fbfc) |
+| Ingestion workspace (`/verify`)             | [Verify](https://github.com/user-attachments/assets/c403784c-8487-41ce-9b62-504570049843) |
+| Results dashboard with highlighted evidence | [Results](https://github.com/user-attachments/assets/e7cbb383-1af6-4a38-a6b2-aa7e1a4668ff) |
+| AI recommendations panel                    | [AI Recommendation](https://github.com/user-attachments/assets/69f06aca-0e3d-4c53-9e42-06af9efdf163) |
 | Offer comparison                            | [Offer Comparison](https://github.com/user-attachments/assets/6003a112-b99c-4211-bf9d-1e0eb3b8fc12) |
 | Scam Awareness Centre                       | [Scam Awareness](https://github.com/user-attachments/assets/a05ab39d-ff03-4a78-88a0-0c0b98b6a071)   |
 | BigQuery Dataset                            | [Big Query](https://github.com/user-attachments/assets/05cd8182-97f7-4ede-85a9-155882668005) |
