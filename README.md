@@ -27,10 +27,11 @@ _Mentor Me Collective (MMC) BUILD, Fall 2026 · Google Cloud Launchpad Showcase 
 | **Deliverable**                        | **Link**                                                                                         |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | Live demo / working product            | [Open OfferProof](https://offerproof-mmc.lovable.app/)                                           |
-| Presentation deck (up to 8 slides)     | <ADD LINK>                                                                                       |
+| Presentation deck (up to 8 slides)     | [Open Presentation](https://docs.google.com/presentation/d/112Ww9Kd2vptrHf4hlNABtG2Q0HgkXWEk/edit?usp=share_link&ouid=101117221453340941138&rtpof=true&sd=true)                                                                                       |
 | Recorded walkthrough (up to 5 minutes) | <ADD LINK>                                                                                       |
 | Written summary (up to 3 pages)        | <ADD LINK>                                                                                       |
 | Team Findings (Google Drive)           | [Open Drive](https://drive.google.com/drive/folders/1Jdwh1QJlVpfTxtblkf1X1PwKmggzAcDd?usp=share_link) |
+| Samples for testing                    | [Open Samples](https://drive.google.com/drive/folders/1ykIK6lx0tlwseCikQxy8Vnl90B-ajc_L?usp=share_link)                                           |
 
 ---
 
